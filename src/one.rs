@@ -15,7 +15,7 @@ pub fn part_two() {
     println!("{}", answer);
 }
 
-fn find_top_three_calories(elves: &Vec<Vec<i32>>) -> i32 {
+fn find_top_three_calories(elves: &[Vec<i32>]) -> i32 {
     let mut totals: Vec<i32> = elves.iter().map(|e| e.iter().sum()).collect();
 
     totals.sort();
@@ -23,7 +23,7 @@ fn find_top_three_calories(elves: &Vec<Vec<i32>>) -> i32 {
     totals.iter().rev().take(3).sum()
 }
 
-fn find_max_calories(elves: &Vec<Vec<i32>>) -> i32 {
+fn find_max_calories(elves: &[Vec<i32>]) -> i32 {
     let mut largest = 0;
 
     for elve in elves.iter() {
@@ -44,10 +44,10 @@ fn read_input() -> Vec<Vec<i32>> {
     numbers.push(Vec::new());
     for line in stdin.lock().lines() {
         let line = line.unwrap();
-        if line == "" {
+        if line.is_empty() {
             numbers.push(Vec::new());
 
-            continue
+            continue;
         }
 
         let number: i32 = line.parse().unwrap();
