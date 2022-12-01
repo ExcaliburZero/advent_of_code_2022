@@ -8,5 +8,4 @@ pub fn part_one() {
     //println!("{}", answer);
 }
 
-pub fn part_two() {
-}
+pub fn part_two() {}
