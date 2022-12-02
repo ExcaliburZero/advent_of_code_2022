@@ -25,7 +25,7 @@ fn read_input() -> Vec<(char, char)> {
     let mut entries: Vec<(char, char)> = Vec::new();
     for line in stdin.lock().lines() {
         let line = line.unwrap();
-        let mut parts = line.split(" ");
+        let mut parts = line.split(' ');
 
         entries.push((
             parts.next().unwrap().chars().into_iter().next().unwrap(),
