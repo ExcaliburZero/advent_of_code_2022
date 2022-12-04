@@ -6,7 +6,7 @@ https://adventofcode.com/2022
 | Sun | Mon | Tue | Wed | Thr | Fri | Sat |
 |----|----|----|----|----|----|----|
 | | | | | [1](#day-1) | [2](#day-2) | [3](#day-3) |
-| 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+| [4](#day-4) | 5 | 6 | 7 | 8 | 9 | 10 |
 | 11 | 12 | 13 | 14 | 15 | 16 | 17 |
 | 18 | 19 | 20 | 21 | 22 | 23 | 24 |
 | 25 | | | | | | |
@@ -31,3 +31,10 @@ Ah, a good old set problem.
 For part 1 we just need to break each line in half, make a set of the characters on each side, and take the intersection of those two sets to find the character we are interested in. Then we just check the case of the letter (upper vs. lower) as covert it to ascii and shift it accordingly to calcuate its priority. We then do that for each line of input and sum the resulting priorities.
 
 For part 2 we do something quite similar, but instead of splitting the lines each in half we take three lines at a time, turn them each into their own character set, intersect those three sets, and convert that intersection character to its priority value (same way as part 1). We just do that for each group of three lines and sum the resulting priorities.
+
+## Day 4
+A pretty straightforward ranges problem.
+
+For part 1 we just need to count the number of pairs of ranges that fully contain one or another. We loop over the pairs of ranges `(a, b)` and apply a containment check on both `(a, b)` and `(b, a)` where if either is true we count it towards our total. The containment check is a simple `a_s <= b_s && a_e >= b_e`.
+
+For part 2 we do that same thing but count the number of overlapping pairs of ranges. We do the same loop over the pairs of ranges but apply the following overlap check: `a_s <= b_e && b_s <= a_e`.
