@@ -6,7 +6,7 @@ https://adventofcode.com/2022
 | Sun | Mon | Tue | Wed | Thr | Fri | Sat |
 |----|----|----|----|----|----|----|
 | | | | | [1](#day-1) | [2](#day-2) | [3](#day-3) |
-| [4](#day-4) | 5 | 6 | 7 | 8 | 9 | 10 |
+| [4](#day-4) | [5](#day-5) | 6 | 7 | 8 | 9 | 10 |
 | 11 | 12 | 13 | 14 | 15 | 16 | 17 |
 | 18 | 19 | 20 | 21 | 22 | 23 | 24 |
 | 25 | | | | | | |
@@ -38,3 +38,10 @@ A pretty straightforward ranges problem.
 For part 1 we just need to count the number of pairs of ranges that fully contain one or another. We loop over the pairs of ranges `(a, b)` and apply a containment check on both `(a, b)` and `(b, a)` where if either is true we count it towards our total. The containment check is a simple `a_s <= b_s && a_e >= b_e`.
 
 For part 2 we do that same thing but count the number of overlapping pairs of ranges. We do the same loop over the pairs of ranges but apply the following overlap check: `a_s <= b_e && b_s <= a_e`.
+
+## Day 5
+A pretty standard stacks problem.
+
+For part 1 we just need to process each "move" by repeatedly poping a value off of the source crate and pushing it onto the end of the destination crate the specified number of times. Then we just concatenate together the characters at the end of each create to get the answer.
+
+For part 2 we do the same but when processing each "move" instead of doing each count of the move separately we do them in one go, where we pop that many elements off of the source crate and push them onto a temporary stack then reverse the temporary stack and pop the elements off of the temporary stack and push them onto the destination crate.
