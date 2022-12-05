@@ -1,26 +1,24 @@
 use std::collections::HashSet;
-use std::io;
 use std::io::prelude::*;
+use std::io::{self, BufReader};
 
 pub fn part_one() {
-    let values = read_input();
+    let values = read_input(&mut BufReader::new(io::stdin()));
     let answer = sum_priorities(&values);
 
     println!("{}", answer);
 }
 
 pub fn part_two() {
-    let numbers = read_input();
+    let numbers = read_input(&mut BufReader::new(io::stdin()));
     let answer = sum_priorities_of_badges(&numbers);
 
     println!("{}", answer);
 }
 
-fn read_input() -> Vec<String> {
-    let stdin = io::stdin();
-
+fn read_input<T: std::io::Read>(reader: &mut BufReader<T>) -> Vec<String> {
     let mut numbers: Vec<String> = Vec::new();
-    for line in stdin.lock().lines() {
+    for line in reader.lines() {
         numbers.push(line.unwrap().to_string());
     }
 
@@ -83,4 +81,72 @@ fn sum_priorities_of_badges(values: &[String]) -> i32 {
     }
 
     total
+}
+
+#[cfg(test)]
+mod tests {
+    // Note this useful idiom: importing names from outer (for mod tests) scope.
+    use super::*;
+
+    use std::fs::File;
+
+    #[test]
+    fn test_part_1_example() {
+        let f = File::open("inputs/three_example.txt").unwrap();
+        let values = read_input(&mut BufReader::new(f));
+
+        for v in values.iter() {
+            println!("{}", v);
+        }
+
+        let expected = 157;
+        let actual = sum_priorities(&values);
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn test_part_1_actual() {
+        let f = File::open("inputs/three.txt").unwrap();
+        let values = read_input(&mut BufReader::new(f));
+
+        for v in values.iter() {
+            println!("{}", v);
+        }
+
+        let expected = 7674;
+        let actual = sum_priorities(&values);
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn test_part_2_example() {
+        let f = File::open("inputs/three_example.txt").unwrap();
+        let values = read_input(&mut BufReader::new(f));
+
+        for v in values.iter() {
+            println!("{}", v);
+        }
+
+        let expected = 70;
+        let actual = sum_priorities_of_badges(&values);
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn test_part_2_actual() {
+        let f = File::open("inputs/three.txt").unwrap();
+        let values = read_input(&mut BufReader::new(f));
+
+        for v in values.iter() {
+            println!("{}", v);
+        }
+
+        let expected = 2805;
+        let actual = sum_priorities_of_badges(&values);
+
+        assert_eq!(expected, actual);
+    }
 }
