@@ -1,29 +1,27 @@
-use std::io;
 use std::io::prelude::*;
+use std::io::{self, BufReader};
 
 const ROCK: i32 = 1;
 const PAPER: i32 = 2;
 const SCISSORS: i32 = 3;
 
 pub fn part_one() {
-    let numbers = read_input();
+    let numbers = read_input(&mut BufReader::new(io::stdin()));
     let answer = find_value_assume_true(&numbers);
 
     println!("{}", answer);
 }
 
 pub fn part_two() {
-    let numbers = read_input();
+    let numbers = read_input(&mut BufReader::new(io::stdin()));
     let answer = find_value_assume_result(&numbers);
 
     println!("{}", answer);
 }
 
-fn read_input() -> Vec<(char, char)> {
-    let stdin = io::stdin();
-
+fn read_input<T: std::io::Read>(reader: &mut BufReader<T>) -> Vec<(char, char)> {
     let mut entries: Vec<(char, char)> = Vec::new();
-    for line in stdin.lock().lines() {
+    for line in reader.lines() {
         let line = line.unwrap();
         let mut parts = line.split(' ');
 
@@ -108,4 +106,56 @@ fn find_value_assume_result(guide: &[(char, char)]) -> i32 {
     }
 
     total
+}
+
+#[cfg(test)]
+mod tests {
+    // Note this useful idiom: importing names from outer (for mod tests) scope.
+    use super::*;
+
+    use std::fs::File;
+
+    #[test]
+    fn test_part_1_example() {
+        let f = File::open("inputs/two_example.txt").unwrap();
+        let values = read_input(&mut BufReader::new(f));
+
+        let expected = 15;
+        let actual = find_value_assume_true(&values);
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn test_part_1_actual() {
+        let f = File::open("inputs/two.txt").unwrap();
+        let values = read_input(&mut BufReader::new(f));
+
+        let expected = 11475;
+        let actual = find_value_assume_true(&values);
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn test_part_2_example() {
+        let f = File::open("inputs/two_example.txt").unwrap();
+        let values = read_input(&mut BufReader::new(f));
+
+        let expected = 12;
+        let actual = find_value_assume_result(&values);
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn test_part_2_actual() {
+        let f = File::open("inputs/two.txt").unwrap();
+        let values = read_input(&mut BufReader::new(f));
+
+        let expected = 16862;
+        let actual = find_value_assume_result(&values);
+
+        assert_eq!(expected, actual);
+    }
 }
