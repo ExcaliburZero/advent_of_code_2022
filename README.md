@@ -6,7 +6,7 @@ https://adventofcode.com/2022
 | Sun | Mon | Tue | Wed | Thr | Fri | Sat |
 |----|----|----|----|----|----|----|
 | | | | | [1](#day-1) | [2](#day-2) | [3](#day-3) |
-| [4](#day-4) | [5](#day-5) | 6 | 7 | 8 | 9 | 10 |
+| [4](#day-4) | [5](#day-5) | [6](#day-6) | 7 | 8 | 9 | 10 |
 | 11 | 12 | 13 | 14 | 15 | 16 | 17 |
 | 18 | 19 | 20 | 21 | 22 | 23 | 24 |
 | 25 | | | | | | |
@@ -45,3 +45,10 @@ A pretty standard stacks problem.
 For part 1 we just need to process each "move" by repeatedly poping a value off of the source crate and pushing it onto the end of the destination crate the specified number of times. Then we just concatenate together the characters at the end of each create to get the answer.
 
 For part 2 we do the same but when processing each "move" instead of doing each count of the move separately we do them in one go, where we pop that many elements off of the source crate and push them onto a temporary stack then reverse the temporary stack and pop the elements off of the temporary stack and push them onto the destination crate.
+
+## Day 6
+A nice and easy buffer/deque problem.
+
+For part 1 we just have to iterate over the input character by character, accumulating a buffer of the characters that we see. Once we reach 4 elements in the buffer we check if they are all unique, if so return the current index in the input + 1, else we remove the first element in the buffer and try again with the next character in the input.
+
+For part 2 we do the same thing but with 14 characters instead of 4.
