@@ -1,4 +1,3 @@
-use regex::Regex;
 use std::io::prelude::*;
 use std::io::{self, BufReader};
 
@@ -32,13 +31,6 @@ impl Command {
             _ => (),
         }
 
-        let re = Regex::new(r"\$ cd (a-z)+").unwrap();
-        let matches = re.captures_iter(lines.first().unwrap()).next();
-
-        if let Some(m) = matches {
-            return Command::Cd(m.get(2).unwrap().as_str().to_string());
-        }
-
         if lines.first().unwrap().starts_with("$ cd ") {
             let line = lines.first().unwrap();
 
@@ -63,15 +55,13 @@ impl Object {
                     .collect::<Vec<&str>>()
                     .get(1)
                     .unwrap()
-                    .clone()
-                    .clone()
                     .to_string(),
             )
         } else {
             let parts = line.split(' ').collect::<Vec<&str>>();
 
-            let name = parts.get(1).unwrap().to_string();
-            let size = parts.get(0).unwrap().parse().unwrap();
+            let name = parts.last().unwrap().to_string();
+            let size = parts.first().unwrap().parse().unwrap();
 
             Object::File(name, size)
         }
@@ -140,11 +130,10 @@ impl Structure {
         match self {
             Structure::Directory(_, children) => children
                 .iter_mut()
-                .filter(|c| match c {
+                .find(|c| match c {
                     Structure::Directory(name_2, _) => name_2 == name,
                     _ => false,
                 })
-                .next()
                 .unwrap(),
             _ => panic!(),
         }
@@ -154,11 +143,10 @@ impl Structure {
         match self {
             Structure::Directory(_, children) => children
                 .iter()
-                .filter(|c| match c {
+                .find(|c| match c {
                     Structure::Directory(name_2, _) => name_2 == name,
                     _ => false,
                 })
-                .next()
                 .unwrap(),
             _ => panic!(),
         }
@@ -169,9 +157,8 @@ impl Structure {
             Structure::Directory(_, children) => {
                 let mut subdirs = Vec::new();
                 for child in children {
-                    match child {
-                        Structure::Directory(name, _) => subdirs.push(name.to_string()),
-                        _ => (),
+                    if let Structure::Directory(name, _) = child {
+                        subdirs.push(name.to_string());
                     }
                 }
 
@@ -190,7 +177,7 @@ fn read_input<T: std::io::Read>(reader: &mut BufReader<T>) -> Vec<Command> {
     for line in reader.lines() {
         let line = line.unwrap();
 
-        if line.starts_with("$") && seen_any {
+        if line.starts_with('$') && seen_any {
             commands.push(Command::from_lines(&buffer));
             buffer.clear();
         }
