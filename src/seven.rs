@@ -252,7 +252,6 @@ fn find_smallest_to_remove(commands: &[Command]) -> i32 {
     smallest_to_remove
 }
 
-/*
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
@@ -262,46 +261,45 @@ mod tests {
 
     #[test]
     fn test_part_1_example() {
-        let f = File::open("inputs/six_example.txt").unwrap();
+        let f = File::open("inputs/seven_example.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 7;
-        let actual = find_start_marker(&values[0]);
+        let expected = 95437;
+        let actual = find_total_size(&values);
 
         assert_eq!(expected, actual)
     }
 
     #[test]
     fn test_part_1_actual() {
-        let f = File::open("inputs/six.txt").unwrap();
+        let f = File::open("inputs/seven.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 1287;
-        let actual = find_start_marker(&values[0]);
+        let expected = 1447046;
+        let actual = find_total_size(&values);
 
         assert_eq!(expected, actual)
     }
 
     #[test]
     fn test_part_2_example() {
-        let f = File::open("inputs/six_example.txt").unwrap();
+        let f = File::open("inputs/seven_example.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 19;
-        let actual = find_start_marker_2(&values[0]);
+        let expected = 24933642;
+        let actual = find_smallest_to_remove(&values);
 
         assert_eq!(expected, actual)
     }
 
     #[test]
     fn test_part_2_actual() {
-        let f = File::open("inputs/six.txt").unwrap();
+        let f = File::open("inputs/seven.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 3716;
-        let actual = find_start_marker_2(&values[0]);
+        let expected = 578710;
+        let actual = find_smallest_to_remove(&values);
 
         assert_eq!(expected, actual)
     }
 }
-*/
