@@ -6,7 +6,7 @@ https://adventofcode.com/2022
 | Sun | Mon | Tue | Wed | Thr | Fri | Sat |
 |----|----|----|----|----|----|----|
 | | | | | [1](#day-1) | [2](#day-2) | [3](#day-3) |
-| [4](#day-4) | [5](#day-5) | [6](#day-6) | 7 | 8 | 9 | 10 |
+| [4](#day-4) | [5](#day-5) | [6](#day-6) | [7](#day-7) | 8 | 9 | 10 |
 | 11 | 12 | 13 | 14 | 15 | 16 | 17 |
 | 18 | 19 | 20 | 21 | 22 | 23 | 24 |
 | 25 | | | | | | |
@@ -52,3 +52,10 @@ A nice and easy buffer/deque problem.
 For part 1 we just have to iterate over the input character by character, accumulating a buffer of the characters that we see. Once we reach 4 elements in the buffer we check if they are all unique, if so return the current index in the input + 1, else we remove the first element in the buffer and try again with the next character in the input.
 
 For part 2 we do the same thing but with 14 characters instead of 4.
+
+## [Day 7](src/seven.rs)
+Hmmm... I'm not sure if this was a large complexity spike or I just overcomplicated things...
+
+For part 1 we parse the commands from the input and then "execute" the commands to build up a representation of the directory structure. Then we recursively iterate over the directory structure and sum up the sizes of all directories that are above 100,000 in size. We then return that sum.
+
+For part 2 we parse and "execute" to build up the directory structure like in part 1. Then we recursively iterate over the directory structure but instead try to find the size of the smallest directory that is at least `root.size() - (70,000,000 - 30,000,000)` in size.
