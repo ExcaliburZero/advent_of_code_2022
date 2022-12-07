@@ -1,30 +1,28 @@
 use regex::Regex;
-use std::io;
 use std::io::prelude::*;
+use std::io::{self, BufReader};
 
 type Crate = Vec<char>;
 
 pub fn part_one() {
-    let (mut crates, moves) = read_input();
+    let (mut crates, moves) = read_input(&mut BufReader::new(io::stdin()));
     let answer = find_top_crates_after_moves(&mut crates, &moves);
 
     println!("{}", answer);
 }
 
 pub fn part_two() {
-    let (mut crates, moves) = read_input();
+    let (mut crates, moves) = read_input(&mut BufReader::new(io::stdin()));
     let answer = find_top_crates_after_moves_2(&mut crates, &moves);
 
     println!("{}", answer);
 }
 
-fn read_input() -> (Vec<Crate>, Vec<Move>) {
-    let stdin = io::stdin();
-
+fn read_input<T: std::io::Read>(reader: &mut BufReader<T>) -> (Vec<Crate>, Vec<Move>) {
     let mut crates: Vec<Crate> = Vec::new();
     let mut moves: Vec<Move> = Vec::new();
     let mut at_moves = false;
-    for line in stdin.lock().lines() {
+    for line in reader.lines() {
         let line = line.unwrap();
 
         if line.is_empty() {
@@ -135,3 +133,55 @@ fn preform_move_2(state: &mut [Crate], m: &Move) {
     }
     println!();
 }*/
+
+#[cfg(test)]
+mod tests {
+    // Note this useful idiom: importing names from outer (for mod tests) scope.
+    use super::*;
+
+    use std::fs::File;
+
+    #[test]
+    fn test_part_1_example() {
+        let f = File::open("inputs/five_example.txt").unwrap();
+        let (mut crates, moves) = read_input(&mut BufReader::new(f));
+
+        let expected = "CMZ".to_string();
+        let actual = find_top_crates_after_moves(&mut crates, &moves);
+
+        assert_eq!(expected, actual)
+    }
+
+    #[test]
+    fn test_part_1_actual() {
+        let f = File::open("inputs/five.txt").unwrap();
+        let (mut crates, moves) = read_input(&mut BufReader::new(f));
+
+        let expected = "JRVNHHCSJ".to_string();
+        let actual = find_top_crates_after_moves(&mut crates, &moves);
+
+        assert_eq!(expected, actual)
+    }
+
+    #[test]
+    fn test_part_2_example() {
+        let f = File::open("inputs/five_example.txt").unwrap();
+        let (mut crates, moves) = read_input(&mut BufReader::new(f));
+
+        let expected = "MCD".to_string();
+        let actual = find_top_crates_after_moves_2(&mut crates, &moves);
+
+        assert_eq!(expected, actual)
+    }
+
+    #[test]
+    fn test_part_2_actual() {
+        let f = File::open("inputs/five.txt").unwrap();
+        let (mut crates, moves) = read_input(&mut BufReader::new(f));
+
+        let expected = "GNFBSBJLH".to_string();
+        let actual = find_top_crates_after_moves_2(&mut crates, &moves);
+
+        assert_eq!(expected, actual)
+    }
+}
