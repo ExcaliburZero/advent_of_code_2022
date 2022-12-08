@@ -249,7 +249,6 @@ fn find_best_senic_score(grid: &Grid) -> i32 {
     grid.find_best_senic_score()
 }
 
-/*
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
@@ -259,46 +258,45 @@ mod tests {
 
     #[test]
     fn test_part_1_example() {
-        let f = File::open("inputs/six_example.txt").unwrap();
+        let f = File::open("inputs/eight_example.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 7;
-        let actual = find_start_marker(&values[0]);
+        let expected = 21;
+        let actual = count_visible_trees(&values);
 
         assert_eq!(expected, actual)
     }
 
     #[test]
     fn test_part_1_actual() {
-        let f = File::open("inputs/six.txt").unwrap();
+        let f = File::open("inputs/eight.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 1287;
-        let actual = find_start_marker(&values[0]);
+        let expected = 1870;
+        let actual = count_visible_trees(&values);
 
         assert_eq!(expected, actual)
     }
 
     #[test]
     fn test_part_2_example() {
-        let f = File::open("inputs/six_example.txt").unwrap();
+        let f = File::open("inputs/eight_example.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 19;
-        let actual = find_start_marker_2(&values[0]);
+        let expected = 8;
+        let actual = find_best_senic_score(&values);
 
         assert_eq!(expected, actual)
     }
 
     #[test]
     fn test_part_2_actual() {
-        let f = File::open("inputs/six.txt").unwrap();
+        let f = File::open("inputs/eight.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 3716;
-        let actual = find_start_marker_2(&values[0]);
+        let expected = 517440;
+        let actual = find_best_senic_score(&values);
 
         assert_eq!(expected, actual)
     }
 }
-*/
