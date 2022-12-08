@@ -6,7 +6,7 @@ https://adventofcode.com/2022
 | Sun | Mon | Tue | Wed | Thr | Fri | Sat |
 |----|----|----|----|----|----|----|
 | | | | | [1](#day-1) | [2](#day-2) | [3](#day-3) |
-| [4](#day-4) | [5](#day-5) | [6](#day-6) | [7](#day-7) | 8 | 9 | 10 |
+| [4](#day-4) | [5](#day-5) | [6](#day-6) | [7](#day-7) | [8](#day-8) | 9 | 10 |
 | 11 | 12 | 13 | 14 | 15 | 16 | 17 |
 | 18 | 19 | 20 | 21 | 22 | 23 | 24 |
 | 25 | | | | | | |
@@ -59,3 +59,10 @@ Hmmm... I'm not sure if this was a large complexity spike or I just overcomplica
 For part 1 we parse the commands from the input and then "execute" the commands to build up a representation of the directory structure. Then we recursively iterate over the directory structure and sum up the sizes of all directories that are above 100,000 in size. We then return that sum.
 
 For part 2 we parse and "execute" to build up the directory structure like in part 1. Then we recursively iterate over the directory structure but instead try to find the size of the smallest directory that is at least `root.size() - (70,000,000 - 30,000,000)` in size.
+
+## [Day 8](src/eight.rs)
+Another one where the solutions are pretty simple, but the implementations are complex.
+
+For part 1 we parse in the input into a 2d grid of integers and then check each point in the grid to see if it is visible. To do that we first check if the point is on an edge, if so it is visible. If it is not on an edge, we try "approaching" it from each direction (up, down, left, and right) where we start at each edge of the grid (level with the point) and keep approaching the point by moving in the direction until we either reach a hight at or above that of the destination point (not visible) or we reach the destination point (visible). We then return the number of visible points we found. 
+
+For part 2 we parse in the grid in the same way and calculate the "senic score" of each point in the grid. To do that we start moving in each direction until we reach a tree that is at or above the height of our starting tree, tracking the number of visible trees we passed or reached and then multiplying those counts for each of the four directions. We then return the largest scenic score we found.
