@@ -6,7 +6,7 @@ https://adventofcode.com/2022
 | Sun | Mon | Tue | Wed | Thr | Fri | Sat |
 |----|----|----|----|----|----|----|
 | | | | | [1](#day-1) | [2](#day-2) | [3](#day-3) |
-| [4](#day-4) | [5](#day-5) | [6](#day-6) | [7](#day-7) | [8](#day-8) | 9 | 10 |
+| [4](#day-4) | [5](#day-5) | [6](#day-6) | [7](#day-7) | [8](#day-8) | [9](#day-9) | 10 |
 | 11 | 12 | 13 | 14 | 15 | 16 | 17 |
 | 18 | 19 | 20 | 21 | 22 | 23 | 24 |
 | 25 | | | | | | |
@@ -66,3 +66,10 @@ Another one where the solutions are pretty simple, but the implementations are c
 For part 1 we parse in the input into a 2d grid of integers and then check each point in the grid to see if it is visible. To do that we first check if the point is on an edge, if so it is visible. If it is not on an edge, we try "approaching" it from each direction (up, down, left, and right) where we start at each edge of the grid (level with the point) and keep approaching the point by moving in the direction until we either reach a hight at or above that of the destination point (not visible) or we reach the destination point (visible). We then return the number of visible points we found. 
 
 For part 2 we parse in the grid in the same way and calculate the "senic score" of each point in the grid. To do that we start moving in each direction until we reach a tree that is at or above the height of our starting tree, tracking the number of visible trees we passed or reached and then multiplying those counts for each of the four directions. We then return the largest scenic score we found.
+
+## [Day 9](src/nine.rs)
+A state updating / position calculating problem. Definitely more fun than the previous few days.
+
+For part 1 we parse in the input moves and generate our default "board state" with head and tail at (0, 0) and a record that the tail has visited (0, 0). For each move we update the state of the board one movement unit at a time. To update the state we move the head by that movement unit in the given direction and then update the position of the tail based on the rules in the problem description, and we also record the new tail position in the visited set. Once we have done that for each move we return the length of the tail visited positions set we built up along the way.
+
+For part 2 we do the same, but instead of just having a head and tail we have a head, 8 inner segments, and a tail. We change the state "update" function to move the head, then aply the effects of the head movement to each of the inner segments in turn (using same tail update rules from part 1), then apply the last segment's movement effect to the tail and update the tail visited set with it's new position. Once we have done that for each move we return the length of the tail visited positions set we built up along the way.
