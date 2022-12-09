@@ -22,7 +22,7 @@ fn read_input<T: std::io::Read>(reader: &mut BufReader<T>) -> Vec<Move> {
         moves.push(Move::from_str(&line.unwrap()));
     }
 
-    moves 
+    moves
 }
 
 fn count_tail_visits(moves: &[Move], num_segments: usize) -> i32 {
@@ -47,7 +47,10 @@ impl Position {
     }
 
     fn diff(&self, other: &Position) -> DistanceVector {
-        DistanceVector { row_diff: other.row - self.row, column_diff: other.column - self.column }
+        DistanceVector {
+            row_diff: other.row - self.row,
+            column_diff: other.column - self.column,
+        }
     }
 
     fn moved(&self, vector: &DistanceVector) -> Position {
@@ -63,12 +66,15 @@ struct DistanceVector {
 
 impl DistanceVector {
     fn new(r: i32, c: i32) -> DistanceVector {
-        DistanceVector { row_diff: r, column_diff: c }
+        DistanceVector {
+            row_diff: r,
+            column_diff: c,
+        }
     }
 
     fn euclidean_distance(&self) -> f32 {
         f32::sqrt((self.row_diff.pow(2) + self.column_diff.pow(2)) as f32)
-    } 
+    }
 
     fn to_diagonal_move(&self) -> DistanceVector {
         let row_diff = self.row_diff / self.row_diff.abs();
@@ -96,7 +102,7 @@ impl State {
             head: Position::new(0, 0),
             segments: vec![Position::new(0, 0); num_segments],
             tail: Position::new(0, 0),
-            known_tail_locations
+            known_tail_locations,
         }
     }
 
@@ -114,18 +120,32 @@ impl State {
     }
 
     fn update_segment(&mut self, segment: usize) {
-        let dist = self.segments[segment].diff(&&self.get_prev_segment_pos(segment));
+        let dist = self.segments[segment].diff(&self.get_prev_segment_pos(segment));
 
         let vector = match dist {
-            DistanceVector { row_diff: 2, column_diff: 0 } => DistanceVector::new(1, 0),
-            DistanceVector { row_diff: -2, column_diff: 0 } => DistanceVector::new(-1, 0),
-            DistanceVector { row_diff: 0, column_diff: 2 } => DistanceVector::new(0, 1),
-            DistanceVector { row_diff: 0, column_diff: -2 } => DistanceVector::new(0, -1),
-            _ => if dist.euclidean_distance() > 1.5000001 {
-                dist.to_diagonal_move()
-            } else {
-                DistanceVector::new(0, 0)
-            },
+            DistanceVector {
+                row_diff: 2,
+                column_diff: 0,
+            } => DistanceVector::new(1, 0),
+            DistanceVector {
+                row_diff: -2,
+                column_diff: 0,
+            } => DistanceVector::new(-1, 0),
+            DistanceVector {
+                row_diff: 0,
+                column_diff: 2,
+            } => DistanceVector::new(0, 1),
+            DistanceVector {
+                row_diff: 0,
+                column_diff: -2,
+            } => DistanceVector::new(0, -1),
+            _ => {
+                if dist.euclidean_distance() > 1.5000001 {
+                    dist.to_diagonal_move()
+                } else {
+                    DistanceVector::new(0, 0)
+                }
+            }
         };
 
         self.segments[segment] = self.segments[segment].moved(&vector);
@@ -140,7 +160,7 @@ impl State {
     }
 
     fn get_last_segment_pos(&self) -> Position {
-        if self.segments.len() > 0 {
+        if !self.segments.is_empty() {
             self.segments.last().unwrap().clone()
         } else {
             self.head.clone()
@@ -151,15 +171,29 @@ impl State {
         let dist = self.tail.diff(&self.get_last_segment_pos());
 
         let vector = match dist {
-            DistanceVector { row_diff: 2, column_diff: 0 } => DistanceVector::new(1, 0),
-            DistanceVector { row_diff: -2, column_diff: 0 } => DistanceVector::new(-1, 0),
-            DistanceVector { row_diff: 0, column_diff: 2 } => DistanceVector::new(0, 1),
-            DistanceVector { row_diff: 0, column_diff: -2 } => DistanceVector::new(0, -1),
-            _ => if dist.euclidean_distance() > 1.5000001 {
-                dist.to_diagonal_move()
-            } else {
-                DistanceVector::new(0, 0)
-            },
+            DistanceVector {
+                row_diff: 2,
+                column_diff: 0,
+            } => DistanceVector::new(1, 0),
+            DistanceVector {
+                row_diff: -2,
+                column_diff: 0,
+            } => DistanceVector::new(-1, 0),
+            DistanceVector {
+                row_diff: 0,
+                column_diff: 2,
+            } => DistanceVector::new(0, 1),
+            DistanceVector {
+                row_diff: 0,
+                column_diff: -2,
+            } => DistanceVector::new(0, -1),
+            _ => {
+                if dist.euclidean_distance() > 1.5000001 {
+                    dist.to_diagonal_move()
+                } else {
+                    DistanceVector::new(0, 0)
+                }
+            }
         };
 
         self.tail = self.tail.moved(&vector);
@@ -170,7 +204,10 @@ impl State {
 
 #[derive(Debug)]
 enum Direction {
-    Up, Down, Left, Right
+    Up,
+    Down,
+    Left,
+    Right,
 }
 
 impl Direction {
@@ -180,7 +217,7 @@ impl Direction {
             "D" => Direction::Down,
             "R" => Direction::Right,
             "L" => Direction::Left,
-            _ => panic!()
+            _ => panic!(),
         }
     }
 }
@@ -198,7 +235,10 @@ impl Move {
         let direction = Direction::from_str(parts.next().unwrap());
         let distance = parts.next().unwrap().parse().unwrap();
 
-        Move { direction, distance }
+        Move {
+            direction,
+            distance,
+        }
     }
 
     fn to_distance_vector(&self) -> DistanceVector {
@@ -211,7 +251,6 @@ impl Move {
     }
 }
 
-/*
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
@@ -221,46 +260,45 @@ mod tests {
 
     #[test]
     fn test_part_1_example() {
-        let f = File::open("inputs/six_example.txt").unwrap();
+        let f = File::open("inputs/nine_example.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 7;
-        let actual = find_start_marker(&values[0]);
+        let expected = 13;
+        let actual = count_tail_visits(&values, 0);
 
         assert_eq!(expected, actual)
     }
 
     #[test]
     fn test_part_1_actual() {
-        let f = File::open("inputs/six.txt").unwrap();
+        let f = File::open("inputs/nine.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 1287;
-        let actual = find_start_marker(&values[0]);
+        let expected = 6498;
+        let actual = count_tail_visits(&values, 0);
 
         assert_eq!(expected, actual)
     }
 
     #[test]
     fn test_part_2_example() {
-        let f = File::open("inputs/six_example.txt").unwrap();
+        let f = File::open("inputs/nine_example_2.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 19;
-        let actual = find_start_marker_2(&values[0]);
+        let expected = 36;
+        let actual = count_tail_visits(&values, 8);
 
         assert_eq!(expected, actual)
     }
 
     #[test]
     fn test_part_2_actual() {
-        let f = File::open("inputs/six.txt").unwrap();
+        let f = File::open("inputs/nine.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 3716;
-        let actual = find_start_marker_2(&values[0]);
+        let expected = 2531;
+        let actual = count_tail_visits(&values, 8);
 
         assert_eq!(expected, actual)
     }
 }
-*/
