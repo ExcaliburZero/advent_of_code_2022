@@ -74,6 +74,7 @@ mod tests {
         assert_eq!(expected, actual);
     }
 
+    #[ignore]
     #[test]
     fn test_part_1_actual() {
         let f = File::open("inputs/one.txt").unwrap();
@@ -96,6 +97,7 @@ mod tests {
         assert_eq!(expected, actual);
     }
 
+    #[ignore]
     #[test]
     fn test_part_2_actual() {
         let f = File::open("inputs/one.txt").unwrap();
