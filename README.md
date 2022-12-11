@@ -7,7 +7,7 @@ https://adventofcode.com/2022
 |----|----|----|----|----|----|----|
 | | | | | [1](#day-1) | [2](#day-2) | [3](#day-3) |
 | [4](#day-4) | [5](#day-5) | [6](#day-6) | [7](#day-7) | [8](#day-8) | [9](#day-9) | [10](#day-10) |
-| 11 | 12 | 13 | 14 | 15 | 16 | 17 |
+| [11](#day-11) | 12 | 13 | 14 | 15 | 16 | 17 |
 | 18 | 19 | 20 | 21 | 22 | 23 | 24 |
 | 25 | | | | | | |
 
@@ -80,3 +80,10 @@ Ooh, a simple CPU simulation! One of my favorites.
 For part 1 we parse in the input into a list of instructions and create an X register and initialize it to `1`. We then need to execute each instruction cycle by cycle until we exhaust the instruction set. To do this we first create a Vec of each instruction along with the number of remaining cycles it has to execute, then for each cycle we grab the first remaining instruction, decrement its remaining cycles, and if it then has 0 remaining cycles we execute it on the register. To execute an instruction, if it is a `noop` we do nothing and if it is an `addx` we add the given value to the X register. To get the result we take the sum of the signal strength (cycle number * X value) for the cycles: 20, 60, 100, 140, 180, 220 (1 indexed), making sure to calculate the signal strength before executing the instruction (if one executes that cycle).
 
 For part 2 we do the same, but instead of calculating signal stregnths we instead calculate pixel on and off values at each cycle. For each cycle we check if the value of X is within 1 of the column of the pixel for the current cycle `(cycle - 1) % 40` (again before executing any instruction for that cycle). We then build up a string out of those pixel values, making sure to add newlines after each 40th cycle.
+
+## [Day 11](src/eleven.rs)
+A problem with a mildly-fiddly implementation, and the part 2 was a bit tricky for me to figure out.
+
+For part 1 we parse in the input (monkey -> items mapping, monkey item "update" rules, monkey item "transfer" rules) then we need to simulate each round. For each round we keep track of the monkey -> items mapping for the current round and for the next round. During a round we start with monkey `0` and continue until the last monkey, for each monkey we look at its items, for each item we apply the monkey's "update" rule and then divide the result by 3, then we find the destination by applying the monkey's "transfer" rule to that result, if the destination monkey is higher numbered than the current monkey we give the destination monkey the item this round, else we give the item next round. While doing the rounds we keep track in a count table of how many times each monkey inspected an item, then after all rounds have ended we return the product of the two largest monkey inspection counts.
+
+For part 2 we do pretty much the same thing. Just instead of dividing by 3 after applying the "update" rule we instead take its remainder against our resolution (product of all monkey divisor values in their "transfer" rule) in order to keep the item values from getting too big while retaining the mathematical properties that we want. We also need to make sure we are using 64 bit (signed) integers for the item values and the monkey inspection counts.
