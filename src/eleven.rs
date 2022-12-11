@@ -3,15 +3,15 @@ use std::io::prelude::*;
 use std::io::{self, BufReader};
 
 pub fn part_one() {
-    let mut values = read_input(&mut BufReader::new(io::stdin()));
-    let answer = calc_monkey_business(&mut values);
+    let values = read_input(&mut BufReader::new(io::stdin()));
+    let answer = calc_monkey_business(&values);
 
     println!("{}", answer);
 }
 
 pub fn part_two() {
-    let mut values = read_input(&mut BufReader::new(io::stdin()));
-    let answer = calc_monkey_business_2(&mut values);
+    let values = read_input(&mut BufReader::new(io::stdin()));
+    let answer = calc_monkey_business_2(&values);
 
     println!("{}", answer);
 }
@@ -183,7 +183,7 @@ fn read_input<T: std::io::Read>(reader: &mut BufReader<T>) -> Vec<Monkey> {
     monkeys
 }
 
-fn calc_monkey_business(monkeys: &mut [Monkey]) -> i32 {
+fn calc_monkey_business(monkeys: &[Monkey]) -> i32 {
     let mut prev_state = State::from_monkeys(monkeys);
     let mut inspection_counts: HashMap<usize, i32> = HashMap::new();
     for _ in 0..20 {
@@ -236,7 +236,7 @@ fn calc_monkey_business(monkeys: &mut [Monkey]) -> i32 {
     counts.iter().take(2).product()
 }
 
-fn calc_monkey_business_2(monkeys: &mut [Monkey]) -> i64 {
+fn calc_monkey_business_2(monkeys: &[Monkey]) -> i64 {
     let mut prev_state = State::from_monkeys(monkeys);
     let mut inspection_counts: HashMap<usize, i64> = HashMap::new();
     println!(" initial: {prev_state:?}");
@@ -303,7 +303,6 @@ fn calc_monkey_business_2(monkeys: &mut [Monkey]) -> i64 {
     counts.iter().take(2).product()
 }
 
-/*
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
@@ -313,11 +312,11 @@ mod tests {
 
     #[test]
     fn test_part_1_example() {
-        let f = File::open("inputs/six_example.txt").unwrap();
+        let f = File::open("inputs/eleven_example.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 7;
-        let actual = find_start_marker(&values[0]);
+        let expected = 10605;
+        let actual = calc_monkey_business(&values);
 
         assert_eq!(expected, actual)
     }
@@ -325,59 +324,22 @@ mod tests {
     #[ignore]
     #[test]
     fn test_part_1_actual() {
-        let f = File::open("inputs/six.txt").unwrap();
-        let values = read_
-fn find_start_marker(values: &str) -> i32 {
-    let mut buffer = Vec::new();
-    for (i, c) in values.chars().enumerate() {
-        if buffer.len() == 4 {
-            buffer.reverse();
-            buffer.pop();
-            buffer.reverse();
-        }
+        let f = File::open("inputs/eleven.txt").unwrap();
+        let values = read_input(&mut BufReader::new(f));
 
-        buffer.push(c);
-
-        let unique_chars: HashSet<char> = buffer.iter().cloned().collect();
-        if unique_chars.len() == 4 {
-            return i as i32 + 1;
-        }
-    }
-
-    panic!()
-}
-
-fn find_start_marker_2(values: &str) -> i32 {
-    let mut buffer = Vec::new();
-    for (i, c) in values.chars().enumerate() {
-        if buffer.len() == 14 {
-            buffer.reverse();
-            buffer.pop();
-            buffer.reverse();
-        }
-
-        buffer.push(c);
-
-        let unique_chars: HashSet<char> = buffer.iter().cloned().collect();
-        if unique_chars.len() == 14 {
-            return i as i32 + 1;
-        }
-    }
-
-    panic!()
-}
-tart_marker(&values[0]);
+        let expected = 119715;
+        let actual = calc_monkey_business(&values);
 
         assert_eq!(expected, actual)
     }
 
     #[test]
     fn test_part_2_example() {
-        let f = File::open("inputs/six_example.txt").unwrap();
+        let f = File::open("inputs/eleven_example.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 19;
-        let actual = find_start_marker_2(&values[0]);
+        let expected = 2713310158;
+        let actual = calc_monkey_business_2(&values);
 
         assert_eq!(expected, actual)
     }
@@ -385,13 +347,12 @@ tart_marker(&values[0]);
     #[ignore]
     #[test]
     fn test_part_2_actual() {
-        let f = File::open("inputs/six.txt").unwrap();
+        let f = File::open("inputs/eleven.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 3716;
-        let actual = find_start_marker_2(&values[0]);
+        let expected = 18085004878;
+        let actual = calc_monkey_business_2(&values);
 
         assert_eq!(expected, actual)
     }
 }
-*/
