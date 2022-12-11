@@ -1,5 +1,3 @@
-use num_bigint::{BigUint, ToBigUint};
-use num_traits::Zero;
 use std::collections::HashMap;
 use std::io::prelude::*;
 use std::io::{self, BufReader};
@@ -18,7 +16,7 @@ pub fn part_two() {
     println!("{}", answer);
 }
 
-type Item = BigUint;
+type Item = i64;
 
 #[derive(Debug)]
 struct State {
@@ -156,7 +154,7 @@ impl MonkeyRule {
     }
 
     fn apply(&self, value: Item) -> usize {
-        if value % self.divisor.clone() == Zero::zero() {
+        if value % self.divisor.clone() == 0 {
             self.true_dest
         } else {
             self.false_dest
@@ -204,7 +202,7 @@ fn calc_monkey_business(monkeys: &mut [Monkey]) -> i32 {
             {
                 println!("  Inpsects {item}");
 
-                let new_value = monkey.calc_new_item_value(item.clone()) / 3.to_biguint().unwrap();
+                let new_value = monkey.calc_new_item_value(item.clone()) / 3;
                 let destination = monkey.calc_destination(new_value.clone());
 
                 //println!("  now {new_value.clone()}");
@@ -242,7 +240,7 @@ fn calc_monkey_business_2(monkeys: &mut [Monkey]) -> i64 {
     let mut prev_state = State::from_monkeys(monkeys);
     let mut inspection_counts: HashMap<usize, i64> = HashMap::new();
     println!(" initial: {prev_state:?}");
-    let resolution: BigUint = monkeys.iter().map(|m| m.rule.divisor.clone()).product();
+    let resolution: Item = monkeys.iter().map(|m| m.rule.divisor.clone()).product();
     for r in 0..10000 {
         //for r in 0..50 {
         //println!("{r}");
