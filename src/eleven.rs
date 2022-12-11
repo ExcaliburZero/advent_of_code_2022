@@ -34,7 +34,7 @@ impl State {
         let mut state = State::new();
         for (num, monkey) in monkeys.iter().enumerate() {
             for item in monkey.starting_items.iter() {
-                state.add_item(item.clone(), num);
+                state.add_item(*item, num);
             }
         }
 
@@ -108,12 +108,7 @@ enum Operation {
 
 impl Operation {
     fn from_str(line: &str) -> Operation {
-        let op = line
-            .split(' ')
-            .collect::<Vec<&str>>()
-            .get(6)
-            .unwrap()
-            .clone();
+        let op = *line.split(' ').collect::<Vec<&str>>().get(6).unwrap();
         let value = Symbol::from_str(line.split(' ').last().unwrap());
 
         match op {
@@ -125,9 +120,9 @@ impl Operation {
 
     fn calc(&self, value: Item) -> Item {
         match self {
-            Operation::Add(Symbol::Old) => value.clone() + value.clone(),
+            Operation::Add(Symbol::Old) => value + value,
             Operation::Add(Symbol::Value(v2)) => value + v2,
-            Operation::Multiply(Symbol::Old) => value.clone() * value.clone(),
+            Operation::Multiply(Symbol::Old) => value * value,
             Operation::Multiply(Symbol::Value(v2)) => value * v2,
         }
     }
@@ -154,7 +149,7 @@ impl MonkeyRule {
     }
 
     fn apply(&self, value: Item) -> usize {
-        if value % self.divisor.clone() == 0 {
+        if value % self.divisor == 0 {
             self.true_dest
         } else {
             self.false_dest
@@ -187,87 +182,58 @@ fn calc_monkey_business(monkeys: &[Monkey]) -> i32 {
     let mut prev_state = State::from_monkeys(monkeys);
     let mut inspection_counts: HashMap<usize, i32> = HashMap::new();
     for _ in 0..20 {
-        println!("{prev_state:?}");
-
         let mut new_state = State::new();
         for (num, monkey) in monkeys.iter().enumerate() {
-            println!("Monkey {num}:");
             for item in prev_state
                 .items_by_monkey
                 .get(&num)
                 .cloned()
-                .or(Some(vec![]))
-                .unwrap()
+                .unwrap_or_default()
                 .iter()
             {
-                println!("  Inpsects {item}");
-
-                let new_value = monkey.calc_new_item_value(item.clone()) / 3;
-                let destination = monkey.calc_destination(new_value.clone());
-
-                //println!("  now {new_value.clone()}");
-                println!("  to {destination}");
+                let new_value = monkey.calc_new_item_value(*item) / 3;
+                let destination = monkey.calc_destination(new_value);
 
                 if destination <= num {
-                    new_state.add_item(new_value.clone(), destination);
+                    new_state.add_item(new_value, destination);
                 } else {
-                    prev_state.add_item(new_value.clone(), destination);
+                    prev_state.add_item(new_value, destination);
                 }
 
-                if !inspection_counts.contains_key(&num) {
-                    inspection_counts.insert(num, 0);
-                }
-                *inspection_counts.get_mut(&num).unwrap() += 1;
+                *inspection_counts.entry(num).or_insert(0) += 1;
             }
-
-            //println!("\t{prev_state:?}");
         }
 
         prev_state = new_state;
     }
 
-    println!("{prev_state:?}");
-
     let mut counts = inspection_counts.values().cloned().collect::<Vec<i32>>();
     counts.sort();
     counts.reverse();
-    println!("{inspection_counts:?}");
-    println!("{counts:?}");
+
     counts.iter().take(2).product()
 }
 
 fn calc_monkey_business_2(monkeys: &[Monkey]) -> i64 {
+    let resolution: Item = monkeys.iter().map(|m| m.rule.divisor).product();
+
     let mut prev_state = State::from_monkeys(monkeys);
     let mut inspection_counts: HashMap<usize, i64> = HashMap::new();
-    println!(" initial: {prev_state:?}");
-    let resolution: Item = monkeys.iter().map(|m| m.rule.divisor.clone()).product();
-    for r in 0..10000 {
-        //for r in 0..50 {
-        //println!("{r}");
-
+    for _ in 0..10000 {
         let mut new_state = State::new();
         for (num, monkey) in monkeys.iter().enumerate() {
-            //println!("Monkey {num}:");
             for item in prev_state
                 .items_by_monkey
                 .get(&num)
                 .cloned()
-                .or(Some(vec![]))
-                .unwrap()
+                .unwrap_or_default()
                 .iter()
             {
-                //println!("  Inpsects {item}");
+                let mut new_value = monkey.calc_new_item_value(*item);
+                let destination = monkey.calc_destination(new_value);
 
-                let mut new_value = monkey.calc_new_item_value(item.clone());
-                //let new_value = monkey.calc_new_item_value(item.clone()) / 3.to_biguint().unwrap();
-
-                let destination = monkey.calc_destination(new_value.clone());
-
-                //println!("  now {new_value}");
-                //println!("  to {destination}");
-
-                if new_value > resolution.clone() {
-                    new_value = new_value % resolution.clone();
+                if new_value > resolution {
+                    new_value %= resolution;
                 }
 
                 if destination <= num {
@@ -276,30 +242,17 @@ fn calc_monkey_business_2(monkeys: &[Monkey]) -> i64 {
                     prev_state.add_item(new_value, destination);
                 }
 
-                if !inspection_counts.contains_key(&num) {
-                    inspection_counts.insert(num, 0);
-                }
-                *inspection_counts.get_mut(&num).unwrap() += 1;
+                *inspection_counts.entry(num).or_insert(0) += 1;
             }
-
-            //println!("\t{prev_state:?}");
         }
 
         prev_state = new_state;
-
-        if vec![0, 19].contains(&r) {
-            println!("\t{prev_state:?}");
-            println!("{r}: {inspection_counts:?}");
-        }
     }
-
-    //println!("{prev_state:?}");
 
     let mut counts: Vec<i64> = inspection_counts.values().cloned().collect::<Vec<i64>>();
     counts.sort();
     counts.reverse();
-    println!("{inspection_counts:?}");
-    println!("{counts:?}");
+
     counts.iter().take(2).product()
 }
 
