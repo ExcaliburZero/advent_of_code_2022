@@ -221,7 +221,6 @@ fn find_decoder_key(values: &[Vec<Element>]) -> i32 {
         .product::<usize>() as i32
 }
 
-/*
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
@@ -231,11 +230,11 @@ mod tests {
 
     #[test]
     fn test_part_1_example() {
-        let f = File::open("inputs/six_example.txt").unwrap();
+        let f = File::open("inputs/thirteen_example.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 7;
-        let actual = find_start_marker(&values[0]);
+        let expected = 13;
+        let actual = sum_indicies_in_correct_order(&values);
 
         assert_eq!(expected, actual)
     }
@@ -243,22 +242,22 @@ mod tests {
     #[ignore]
     #[test]
     fn test_part_1_actual() {
-        let f = File::open("inputs/six.txt").unwrap();
+        let f = File::open("inputs/thirteen.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 1287;
-        let actual = find_start_marker(&values[0]);
+        let expected = 5003;
+        let actual = sum_indicies_in_correct_order(&values);
 
         assert_eq!(expected, actual)
     }
 
     #[test]
     fn test_part_2_example() {
-        let f = File::open("inputs/six_example.txt").unwrap();
+        let f = File::open("inputs/thirteen_example.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 19;
-        let actual = find_start_marker_2(&values[0]);
+        let expected = 140;
+        let actual = find_decoder_key(&values);
 
         assert_eq!(expected, actual)
     }
@@ -266,13 +265,12 @@ mod tests {
     #[ignore]
     #[test]
     fn test_part_2_actual() {
-        let f = File::open("inputs/six.txt").unwrap();
+        let f = File::open("inputs/thirteen.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 3716;
-        let actual = find_start_marker_2(&values[0]);
+        let expected = 20280;
+        let actual = find_decoder_key(&values);
 
         assert_eq!(expected, actual)
     }
 }
-*/
