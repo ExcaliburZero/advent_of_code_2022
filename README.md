@@ -7,7 +7,7 @@ https://adventofcode.com/2022
 |----|----|----|----|----|----|----|
 | | | | | [1](#day-1) | [2](#day-2) | [3](#day-3) |
 | [4](#day-4) | [5](#day-5) | [6](#day-6) | [7](#day-7) | [8](#day-8) | [9](#day-9) | [10](#day-10) |
-| [11](#day-11) | [12](#day-12) | 13 | 14 | 15 | 16 | 17 |
+| [11](#day-11) | [12](#day-12) | [13](#day-13) | 14 | 15 | 16 | 17 |
 | 18 | 19 | 20 | 21 | 22 | 23 | 24 |
 | 25 | | | | | | |
 
@@ -94,3 +94,12 @@ A pretty classic breadth-first search problem.
 For part 1 we parse in the input into a 2D grid, converting `S` to `0` and recording it as the start position, `E` to `25` and recording it as the end position, and any other characters (`a` - `z`) as (`0` - `25`) respectively (convert to ascii and subtract ascii for `a`). Then we do a breadth-first search (BFS) from the start position to the end position and return the length of the found path (which is the shortest since the graph is unwighted). During the BFS we compute neighbors of a given position by taking the positions one step in the 4 cardinal directions and considering them neighbors if they are within the grid and steppable (source height + 1 >= destination height).
 
 For part 2 we do the same, but rather than do just one BFS from the start to the end, we find each `0` height position in the grid, do a BSF search from each of those to the end position, and return the shortest possible path length found. We also have to make sure to handle `0` height positions that have no valid path to the end position (ignore them).
+
+## [Day 13](src/thirteen.rs)
+A combination stack-based parsing and recursive arbitrarily-structured list comparison problem.
+
+To parse in the input for both parts we parse in each set of 2 input lines as their own lists. For each list we parse its input line using a stack to keep track of where we are in the list and go token by token (`"["`, `"]"`, `","`, integer), appending integers to the current list and on `[` and `]` going one list deeper or shallower respectively (we can ignore `","` tokens). Then when we have finished parsing the line, we record the remaining list in the stack as the parsed list.
+
+For part 1 we need to check each of the pairs of lists to see if the first one is Less, Equal, or Greater than the second one. To do that we implement the recursive comparison rules described in the problem. Then we return the sum of the indicies of the pairs where the first list was Less or Equal to the second (one indexed).
+
+For part 2 we create a Vec with all of the lists plus the 2 divider packets. Then we use the comparison function we implemented for part 1 to sort the Vec (ascending). Then we just do a search through the Vec to find the indices of the two divider packets (one indexed) and return the product of those 2 indices.
