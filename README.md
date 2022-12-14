@@ -7,7 +7,7 @@ https://adventofcode.com/2022
 |----|----|----|----|----|----|----|
 | | | | | [1](#day-1) | [2](#day-2) | [3](#day-3) |
 | [4](#day-4) | [5](#day-5) | [6](#day-6) | [7](#day-7) | [8](#day-8) | [9](#day-9) | [10](#day-10) |
-| [11](#day-11) | [12](#day-12) | [13](#day-13) | 14 | 15 | 16 | 17 |
+| [11](#day-11) | [12](#day-12) | [13](#day-13) | [14](#day-14) | 15 | 16 | 17 |
 | 18 | 19 | 20 | 21 | 22 | 23 | 24 |
 | 25 | | | | | | |
 
@@ -103,3 +103,12 @@ To parse in the input for both parts we parse in each set of 2 input lines as th
 For part 1 we need to check each of the pairs of lists to see if the first one is Less, Equal, or Greater than the second one. To do that we implement the recursive comparison rules described in the problem. Then we return the sum of the indicies of the pairs where the first list was Less or Equal to the second (one indexed).
 
 For part 2 we create a Vec with all of the lists plus the 2 divider packets. Then we use the comparison function we implemented for part 1 to sort the Vec (ascending). Then we just do a search through the Vec to find the indices of the two divider packets (one indexed) and return the product of those 2 indices.
+
+## [Day 14](src/fourteen.rs)
+A simulation problem.
+
+To parse in the input for both parts we parse in each input line by breaking it up based on arrows and the parse each part into position objects and use those positions to build up a trail of line segments. We can then create an expandable 2D grid and fill in the points along each of the trails with rocks. The 2D grid can keep track of known positions (withs rocks or sand) and assume any unset points are empty (though keeping in some known empty points is fine). Once the grid is filled with all the trails we can determine its bounds based on the furthest extent of the positions with rocks.
+
+For part 1 we can repeatedly add sand at the source point, simulate the falling of that sand until it stops moving or falls below the lower bound of the grid, until we finally find the first sand that falls below the lower bound, then we return the number of the sand particle. To simulate the falling of the sand we track the position of the sand and apply the specified movement rules at each step of the simulation.
+
+For part 2 we do the same, but calculate the floor of the 2D grid and change the logic of the simulation to account for the floor. This time we add sand and run the simulation until a particle of sand stops at the source point.
