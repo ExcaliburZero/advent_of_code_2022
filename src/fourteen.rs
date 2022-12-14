@@ -304,7 +304,6 @@ impl Lines {
     }
 }
 
-/*
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
@@ -314,11 +313,11 @@ mod tests {
 
     #[test]
     fn test_part_1_example() {
-        let f = File::open("inputs/six_example.txt").unwrap();
-        let values = read_input(&mut BufReader::new(f));
+        let f = File::open("inputs/fourteen_example.txt").unwrap();
+        let mut grid = read_input(&mut BufReader::new(f));
 
-        let expected = 7;
-        let actual = find_start_marker(&values[0]);
+        let expected = 24;
+        let actual = find_first_fall_sand(&mut grid);
 
         assert_eq!(expected, actual)
     }
@@ -326,22 +325,22 @@ mod tests {
     #[ignore]
     #[test]
     fn test_part_1_actual() {
-        let f = File::open("inputs/six.txt").unwrap();
-        let values = read_input(&mut BufReader::new(f));
+        let f = File::open("inputs/fourteen.txt").unwrap();
+        let mut grid = read_input(&mut BufReader::new(f));
 
-        let expected = 1287;
-        let actual = find_start_marker(&values[0]);
+        let expected = 618;
+        let actual = find_first_fall_sand(&mut grid);
 
         assert_eq!(expected, actual)
     }
 
     #[test]
     fn test_part_2_example() {
-        let f = File::open("inputs/six_example.txt").unwrap();
-        let values = read_input(&mut BufReader::new(f));
+        let f = File::open("inputs/fourteen_example.txt").unwrap();
+        let mut grid = read_input(&mut BufReader::new(f));
 
-        let expected = 19;
-        let actual = find_start_marker_2(&values[0]);
+        let expected = 93;
+        let actual = find_sand_reach_source(&mut grid);
 
         assert_eq!(expected, actual)
     }
@@ -349,13 +348,12 @@ mod tests {
     #[ignore]
     #[test]
     fn test_part_2_actual() {
-        let f = File::open("inputs/six.txt").unwrap();
-        let values = read_input(&mut BufReader::new(f));
+        let f = File::open("inputs/fourteen.txt").unwrap();
+        let mut grid = read_input(&mut BufReader::new(f));
 
-        let expected = 3716;
-        let actual = find_start_marker_2(&values[0]);
+        let expected = 26358;
+        let actual = find_sand_reach_source(&mut grid);
 
         assert_eq!(expected, actual)
     }
 }
-*/
