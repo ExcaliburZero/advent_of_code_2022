@@ -3,14 +3,14 @@ use std::io::{self, BufReader};
 
 pub fn part_one() {
     let values = read_input(&mut BufReader::new(io::stdin()));
-    let answer = find_num_impossible_positions(&values);
+    let answer = find_num_impossible_positions(&values, 2000000);
 
     println!("{}", answer);
 }
 
 pub fn part_two() {
     let values = read_input(&mut BufReader::new(io::stdin()));
-    let answer = find_beacon_frequency(&values);
+    let answer = find_beacon_frequency(&values, 4000000);
 
     println!("{}", answer);
 }
@@ -185,6 +185,19 @@ impl Grid {
 }
 */
 
+fn would_be_visible_but_not_known(position: &Position, sensors: &[Sensor]) -> bool {
+    for sensor in sensors.iter() {
+        if sensor.sensor_position.manhatten_distance(position) <= sensor.dist
+            && *position != sensor.sensor_position
+            && *position != sensor.beacon_position
+        {
+            return true;
+        }
+    }
+
+    false
+}
+
 fn would_be_visible(position: &Position, sensors: &[Sensor]) -> bool {
     for sensor in sensors.iter() {
         if sensor.sensor_position.manhatten_distance(position) <= sensor.dist
@@ -197,8 +210,7 @@ fn would_be_visible(position: &Position, sensors: &[Sensor]) -> bool {
     false
 }
 
-fn find_num_impossible_positions(sensors: &[Sensor]) -> i32 {
-    let search_row = 2000000; //10;
+fn find_num_impossible_positions(sensors: &[Sensor], search_row: i32) -> i32 {
     let mut min_col_extent = None;
     let mut max_col_extent = None;
     for sensor in sensors.iter() {
@@ -227,7 +239,7 @@ fn find_num_impossible_positions(sensors: &[Sensor]) -> i32 {
     for column in min_col_extent..max_col_extent + 1 {
         let position = Position::new(search_row, column);
 
-        if would_be_visible(&position, sensors) {
+        if would_be_visible_but_not_known(&position, sensors) {
             total += 1;
         }
     }
@@ -264,9 +276,9 @@ impl Line {
     }
 }
 
-fn find_beacon_frequency(sensors: &[Sensor]) -> i64 {
+fn find_beacon_frequency(sensors: &[Sensor], range_value: i32) -> i64 {
     //let range = 0..20 + 1;
-    let range = 0..4000000 + 1;
+    let range = 0..range_value + 1;
 
     let lines: Vec<Line> = sensors.iter().flat_map(|s| s.calc_extent_lines()).collect();
 
@@ -291,7 +303,6 @@ fn find_beacon_frequency(sensors: &[Sensor]) -> i64 {
     hidden_beacon.column as i64 * 4000000 + hidden_beacon.row as i64
 }
 
-/*
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
@@ -301,11 +312,11 @@ mod tests {
 
     #[test]
     fn test_part_1_example() {
-        let f = File::open("inputs/six_example.txt").unwrap();
+        let f = File::open("inputs/fifteen_example.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 7;
-        let actual = find_start_marker(&values[0]);
+        let expected = 26;
+        let actual = find_num_impossible_positions(&values, 10);
 
         assert_eq!(expected, actual)
     }
@@ -313,22 +324,22 @@ mod tests {
     #[ignore]
     #[test]
     fn test_part_1_actual() {
-        let f = File::open("inputs/six.txt").unwrap();
+        let f = File::open("inputs/fifteen.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 1287;
-        let actual = find_start_marker(&values[0]);
+        let expected = 4737443;
+        let actual = find_num_impossible_positions(&values, 2000000);
 
         assert_eq!(expected, actual)
     }
 
     #[test]
     fn test_part_2_example() {
-        let f = File::open("inputs/six_example.txt").unwrap();
+        let f = File::open("inputs/fifteen_example.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 19;
-        let actual = find_start_marker_2(&values[0]);
+        let expected = 56000011;
+        let actual = find_beacon_frequency(&values, 20);
 
         assert_eq!(expected, actual)
     }
@@ -336,13 +347,12 @@ mod tests {
     #[ignore]
     #[test]
     fn test_part_2_actual() {
-        let f = File::open("inputs/six.txt").unwrap();
+        let f = File::open("inputs/fifteen.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 3716;
-        let actual = find_start_marker_2(&values[0]);
+        let expected = 11482462818989;
+        let actual = find_beacon_frequency(&values, 4000000);
 
         assert_eq!(expected, actual)
     }
 }
-*/
