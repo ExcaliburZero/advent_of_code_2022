@@ -1,3 +1,4 @@
+use core::time;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::io::prelude::*;
 use std::io::{self, BufReader};
@@ -11,9 +12,9 @@ pub fn part_one() {
 
 pub fn part_two() {
     let values = read_input(&mut BufReader::new(io::stdin()));
-    //let answer = find_start_marker_2(&values[0]);
+    let answer = find_max_pressure_2(&values);
 
-    //println!("{}", answer);
+    println!("{}", answer);
 }
 
 fn read_input<T: std::io::Read>(reader: &mut BufReader<T>) -> HashMap<String, Valve> {
@@ -25,6 +26,72 @@ fn read_input<T: std::io::Read>(reader: &mut BufReader<T>) -> HashMap<String, Va
     }
 
     valves
+}
+
+fn find_max_pressure_2(valves: &HashMap<String, Valve>) -> i32 {
+    let meta_graph = MetaGraph::from_valves(valves);
+    println!("{meta_graph:?}");
+
+    let start = "AA".to_string();
+    let all_nodes: Vec<String> = valves.keys().cloned().collect();
+
+    let starting_state = SearchState::new(2);
+
+    let mut states_to_try: BTreeSet<SearchState> = BTreeSet::new();
+    states_to_try.insert(starting_state);
+
+    let mut tried_states: BTreeSet<SearchState> = BTreeSet::new();
+
+    let mut max_score = 0;
+    while !states_to_try.is_empty() {
+        //let state = states_to_try.iter().next().unwrap().clone();
+        let state = states_to_try.iter().next_back().unwrap().clone();
+        states_to_try.remove(&state);
+
+        //println!("trying: {state:?}");
+
+        if tried_states.contains(&state) {
+            //println!("already_visited");
+            continue;
+        }
+        tried_states.insert(state.clone());
+
+        let (state_result, actions) = state.to_game_state(&start, 26, &meta_graph, valves);
+        //println!("\t{state_result:?}");
+
+        if state_result.time_remaining[0] < 0 || state_result.time_remaining[1] < 0 {
+            //println!("too long");
+            continue;
+        }
+
+        if state_result.best_case_score(valves) < max_score {
+            //println!("best score is too low");
+            continue;
+        }
+
+        if state_result.score > max_score {
+            println!("-------------------");
+            println!("{state:?}");
+            println!("{actions:?}");
+            println!("{state_result:?}");
+            max_score = state_result.score;
+        }
+
+        for node in state.get_remaining_nodes(&all_nodes) {
+            for actor in &[0, 1] {
+                let new_state = state.appended(&node, *actor);
+                if !tried_states.contains(&new_state) {
+                    states_to_try.insert(new_state);
+                }
+            }
+        }
+    }
+
+    for (entry, value) in meta_graph.edges.iter() {
+        println!("{entry:?} => {value:?}");
+    }
+
+    max_score
 }
 
 fn find_max_pressure(valves: &HashMap<String, Valve>) -> i32 {
@@ -85,7 +152,7 @@ fn find_max_pressure(valves: &HashMap<String, Valve>) -> i32 {
     let start = "AA".to_string();
     let all_nodes: Vec<String> = valves.keys().cloned().collect();
 
-    let starting_state = SearchState::new();
+    let starting_state = SearchState::new(1);
 
     let mut states_to_try: BTreeSet<SearchState> = BTreeSet::new();
     states_to_try.insert(starting_state);
@@ -108,7 +175,7 @@ fn find_max_pressure(valves: &HashMap<String, Valve>) -> i32 {
         let (state_result, actions) = state.to_game_state(&start, 30, &meta_graph, valves);
         //println!("\t{state_result:?}");
 
-        if state_result.time_remaining < 0 {
+        if state_result.time_remaining[0] < 0 {
             //println!("too long");
             continue;
         }
@@ -127,7 +194,7 @@ fn find_max_pressure(valves: &HashMap<String, Valve>) -> i32 {
         }
 
         for node in state.get_remaining_nodes(&all_nodes) {
-            let new_state = state.appended(&node);
+            let new_state = state.appended(&node, 0);
             if !tried_states.contains(&new_state) {
                 states_to_try.insert(new_state);
             }
@@ -143,8 +210,8 @@ fn find_max_pressure(valves: &HashMap<String, Valve>) -> i32 {
 
 #[derive(Eq, PartialEq, Debug, Ord, PartialOrd, Clone)]
 struct State {
-    location: String,
-    time_remaining: i32,
+    locations: Vec<String>,
+    time_remaining: Vec<i32>,
     score: i32,
     valve_states: BTreeMap<String, bool>,
 }
@@ -164,19 +231,20 @@ impl PartialOrd for State {
 
 impl State {
     fn new(
-        location: &String,
-        time_remaining: i32,
+        locations: Vec<String>,
+        time_remaining: Vec<i32>,
         score: i32,
         valve_states: BTreeMap<String, bool>,
     ) -> State {
         State {
-            location: location.clone(),
+            locations,
             time_remaining,
             score,
             valve_states,
         }
     }
 
+    /*
     fn get_possible_actions(&self, valves: &HashMap<String, Valve>) -> Vec<Action> {
         let mut actions: Vec<Action> = valves
             .get(&self.location)
@@ -191,26 +259,39 @@ impl State {
         }
 
         actions
-    }
+    }*/
 
-    fn apply_action(&self, action: &Action, valves: &HashMap<String, Valve>) -> State {
-        let new_time_remaining = self.time_remaining - 1;
+    fn apply_action(
+        &self,
+        agent: usize,
+        action: &Action,
+        valves: &HashMap<String, Valve>,
+    ) -> State {
+        let mut new_time_remaining = self.time_remaining.clone();
+        new_time_remaining[agent] -= 1;
 
         match action {
-            Action::Move(valve) => State::new(
-                valve,
-                new_time_remaining,
-                self.score,
-                self.valve_states.clone(),
-            ),
-            Action::Open => {
-                let mut new_valve_states = self.valve_states.clone();
-                new_valve_states.insert(self.location.clone(), true);
+            Action::Move(valve) => {
+                let mut new_locations = self.locations.clone();
+                new_locations[agent] = valve.clone();
 
                 State::new(
-                    &self.location,
+                    new_locations,
                     new_time_remaining,
-                    self.score + new_time_remaining * valves.get(&self.location).unwrap().flow_rate,
+                    self.score,
+                    self.valve_states.clone(),
+                )
+            }
+            Action::Open => {
+                let mut new_valve_states = self.valve_states.clone();
+                new_valve_states.insert(self.locations[agent].clone(), true);
+
+                State::new(
+                    self.locations.clone(),
+                    new_time_remaining.clone(),
+                    self.score
+                        + new_time_remaining[agent]
+                            * valves.get(&self.locations[agent]).unwrap().flow_rate,
                     new_valve_states,
                 )
             }
@@ -227,9 +308,20 @@ impl State {
         off_valves.reverse();
 
         let mut best_score = self.score;
-        for (i, valve) in off_valves.iter().enumerate() {
-            //let time = self.time_remaining - (i as i32) * 1;
-            let time = self.time_remaining - (i as i32) * 2;
+        let mut time_remaining = self.time_remaining.clone();
+        let mut actor_ticks = vec![0; self.locations.len()];
+        for valve in off_valves.iter() {
+            let mut actor_times = time_remaining
+                .iter()
+                .enumerate()
+                .collect::<Vec<(usize, &i32)>>();
+            actor_times.sort_by(|a, b| a.1.cmp(b.1));
+
+            let actor = actor_times.last().unwrap().0;
+            let time = time_remaining[actor] - actor_ticks[actor] * 2;
+
+            actor_ticks[actor] += 1;
+            time_remaining[actor] = time;
 
             if time > 0 {
                 best_score += time * valve.flow_rate;
@@ -244,27 +336,31 @@ impl State {
 
 #[derive(Eq, PartialEq, Debug, Ord, PartialOrd, Clone)]
 struct SearchState {
-    visited_nodes: Vec<String>,
+    visited_nodes: Vec<Vec<String>>,
 }
 
 impl SearchState {
-    fn new() -> SearchState {
+    fn new(num_actors: usize) -> SearchState {
         SearchState {
-            visited_nodes: vec![],
+            visited_nodes: vec![vec![]; num_actors],
         }
     }
 
-    fn appended(&self, node: &String) -> SearchState {
+    fn appended(&self, node: &String, actor: usize) -> SearchState {
         let mut visited_nodes = self.visited_nodes.clone();
-        visited_nodes.push(node.clone());
+        visited_nodes[actor].push(node.clone());
 
         SearchState { visited_nodes }
+    }
+
+    fn get_all_visited_nodes(&self) -> Vec<String> {
+        self.visited_nodes.iter().flatten().cloned().collect()
     }
 
     fn get_remaining_nodes(&self, all_nodes: &[String]) -> Vec<String> {
         all_nodes
             .iter()
-            .filter(|n| !self.visited_nodes.contains(n))
+            .filter(|n| !self.get_all_visited_nodes().contains(n))
             .cloned()
             .collect()
     }
@@ -275,28 +371,35 @@ impl SearchState {
         start_time: i32,
         meta_graph: &MetaGraph,
         valves: &HashMap<String, Valve>,
-    ) -> (State, Vec<Action>) {
-        let mut state = State::new(&start, start_time, 0, BTreeMap::new());
-        let mut actions = vec![];
+    ) -> (State, Vec<Vec<Action>>) {
+        let mut state = State::new(
+            vec![start.to_string(); self.visited_nodes.len()],
+            vec![start_time; self.visited_nodes.len()],
+            0,
+            BTreeMap::new(),
+        );
+        let mut actions = vec![vec![]; self.visited_nodes.len()];
 
-        let mut prev_node = start;
-        for node in self.visited_nodes.iter() {
-            let path: &Path = meta_graph
-                .edges
-                .get(&(prev_node.clone(), node.clone()))
-                .unwrap()
-                .as_ref()
-                .unwrap();
+        for (actor, actor_visited_nodes) in self.visited_nodes.iter().enumerate() {
+            let mut prev_node = start;
+            for node in actor_visited_nodes.iter() {
+                let path: &Path = meta_graph
+                    .edges
+                    .get(&(prev_node.clone(), node.clone()))
+                    .unwrap()
+                    .as_ref()
+                    .unwrap();
 
-            let mut new_actions = path.to_actions();
+                let mut new_actions = path.to_actions();
 
-            state = new_actions
-                .iter()
-                .fold(state, |s, a| s.apply_action(a, valves));
+                state = new_actions
+                    .iter()
+                    .fold(state, |s, a| s.apply_action(actor, a, valves));
 
-            actions.append(&mut new_actions);
+                actions[actor].append(&mut new_actions);
 
-            prev_node = path.valves.last().unwrap();
+                prev_node = path.valves.last().unwrap();
+            }
         }
 
         (state, actions)
@@ -387,7 +490,7 @@ impl MetaGraph {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 enum Action {
     Open,
     Move(String),
