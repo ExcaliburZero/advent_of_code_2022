@@ -1,5 +1,4 @@
-use core::time;
-use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, BinaryHeap, HashMap, HashSet};
 use std::io::prelude::*;
 use std::io::{self, BufReader};
 
@@ -34,11 +33,12 @@ fn find_max_pressure_2(valves: &HashMap<String, Valve>) -> i32 {
 
     let start = "AA".to_string();
     let all_nodes: Vec<String> = valves.keys().cloned().collect();
+    let start_time = 26;
 
     let starting_state = SearchState::new(2);
 
-    let mut states_to_try: BTreeSet<SearchState> = BTreeSet::new();
-    states_to_try.insert(starting_state);
+    let mut states_to_try: BinaryHeap<SearchStateWrapper> = BinaryHeap::new();
+    states_to_try.push(SearchStateWrapper::from_state(&starting_state, &start, start_time, &meta_graph, valves));
 
     let mut tried_states: BTreeSet<SearchState> = BTreeSet::new();
 
@@ -47,8 +47,7 @@ fn find_max_pressure_2(valves: &HashMap<String, Valve>) -> i32 {
     let mut max_score = 0;
     while !states_to_try.is_empty() {
         //let state = states_to_try.iter().next().unwrap().clone();
-        let state = states_to_try.iter().next_back().unwrap().clone();
-        states_to_try.remove(&state);
+        let state = states_to_try.pop().unwrap().search_state;
 
         //println!("trying: {state:?}");
 
@@ -58,7 +57,7 @@ fn find_max_pressure_2(valves: &HashMap<String, Valve>) -> i32 {
         }
         tried_states.insert(state.clone());
 
-        let (state_result, actions) = state.to_game_state(&start, 26, &meta_graph, valves);
+        let (state_result, actions) = state.to_game_state(&start, start_time, &meta_graph, valves);
         //println!("\t{state_result:?}");
 
         if state_result.time_remaining[0] < 0 || state_result.time_remaining[1] < 0 {
@@ -69,7 +68,9 @@ fn find_max_pressure_2(valves: &HashMap<String, Valve>) -> i32 {
         if state_result.best_case_score(valves) < max_score {
             //println!("best score is too low");
             //elimination_times.get_mut()
-            *elimination_times.entry(state_result.time_remaining[0] + state_result.time_remaining[1]).or_default() += 1;
+            *elimination_times
+                .entry(state_result.time_remaining[0] + state_result.time_remaining[1])
+                .or_default() += 1;
             continue;
         }
 
@@ -109,7 +110,7 @@ fn find_max_pressure_2(valves: &HashMap<String, Valve>) -> i32 {
             for actor in vec![0, 1] {
                 let new_state = state.appended(&node, actor);
                 if !tried_states.contains(&new_state) {
-                    states_to_try.insert(new_state);
+                    states_to_try.push(SearchStateWrapper::from_state(&new_state, &start, start_time, &meta_graph, valves));
                 }
             }
         }
@@ -230,6 +231,34 @@ fn find_max_pressure(valves: &HashMap<String, Valve>) -> i32 {
     }
 
     max_score
+}
+
+#[derive(Eq, PartialEq, Debug, Ord, PartialOrd, Clone)]
+struct SearchStateWrapper {
+    base_case_score: i32,
+    search_state: SearchState,
+}
+
+impl SearchStateWrapper {
+    fn from_state(
+        search_state: &SearchState,
+        start: &String,
+        start_time: i32,
+        meta_graph: &MetaGraph,
+        valves: &HashMap<String, Valve>,
+    ) -> SearchStateWrapper {
+        SearchStateWrapper {
+            /*base_case_score: -search_state
+                .to_game_state(start, start_time, meta_graph, valves)
+                .0
+                .best_case_score(valves),*/
+            base_case_score: search_state
+                .to_game_state(start, start_time, meta_graph, valves)
+                .0
+                .score,
+            search_state: search_state.clone(),
+        }
+    }
 }
 
 #[derive(Eq, PartialEq, Debug, Ord, PartialOrd, Clone)]
