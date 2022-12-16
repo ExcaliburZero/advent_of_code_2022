@@ -42,6 +42,8 @@ fn find_max_pressure_2(valves: &HashMap<String, Valve>) -> i32 {
 
     let mut tried_states: BTreeSet<SearchState> = BTreeSet::new();
 
+    let mut elimination_times: BTreeMap<i32, i32> = BTreeMap::new();
+
     let mut max_score = 0;
     while !states_to_try.is_empty() {
         //let state = states_to_try.iter().next().unwrap().clone();
@@ -66,6 +68,8 @@ fn find_max_pressure_2(valves: &HashMap<String, Valve>) -> i32 {
 
         if state_result.best_case_score(valves) < max_score {
             //println!("best score is too low");
+            //elimination_times.get_mut()
+            *elimination_times.entry(state_result.time_remaining[0] + state_result.time_remaining[1]).or_default() += 1;
             continue;
         }
 
@@ -74,21 +78,41 @@ fn find_max_pressure_2(valves: &HashMap<String, Valve>) -> i32 {
             println!("{state:?}");
             println!("{actions:?}");
             println!("{state_result:?}");
+
+            for (time_sum, count) in elimination_times.iter() {
+                println!("{time_sum}\t{count}");
+            }
+
             max_score = state_result.score;
         }
 
         for node in state.get_remaining_nodes(&all_nodes) {
-            for actor in &[0, 1] {
-                let new_state = state.appended(&node, *actor);
+            /*let mut actors_in_heuristic_order: Vec<(usize, i32)> = vec![0, 1]
+                .iter()
+                .map(|actor| {
+                    (
+                        *actor,
+                        meta_graph
+                            .edges
+                            .get(&(state_result.locations[*actor].clone(), node.clone()))
+                            .unwrap()
+                            .as_ref()
+                            .unwrap()
+                            .len() as i32,
+                    )
+                })
+                .collect();
+            actors_in_heuristic_order.sort_by(|a, b| a.1.cmp(&b.1));
+            //actors_in_heuristic_order.reverse();
+
+            for (actor, _) in actors_in_heuristic_order {*/
+            for actor in vec![0, 1] {
+                let new_state = state.appended(&node, actor);
                 if !tried_states.contains(&new_state) {
                     states_to_try.insert(new_state);
                 }
             }
         }
-    }
-
-    for (entry, value) in meta_graph.edges.iter() {
-        println!("{entry:?} => {value:?}");
     }
 
     max_score
