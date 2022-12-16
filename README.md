@@ -7,7 +7,7 @@ https://adventofcode.com/2022
 |----|----|----|----|----|----|----|
 | | | | | [1](#day-1) | [2](#day-2) | [3](#day-3) |
 | [4](#day-4) | [5](#day-5) | [6](#day-6) | [7](#day-7) | [8](#day-8) | [9](#day-9) | [10](#day-10) |
-| [11](#day-11) | [12](#day-12) | [13](#day-13) | [14](#day-14) | 15 | 16 | 17 |
+| [11](#day-11) | [12](#day-12) | [13](#day-13) | [14](#day-14) | [15](#day-15) | 16 | 17 |
 | 18 | 19 | 20 | 21 | 22 | 23 | 24 |
 | 25 | | | | | | |
 
@@ -112,3 +112,8 @@ To parse in the input for both parts we parse in each input line by breaking it 
 For part 1 we can repeatedly add sand at the source point, simulate the falling of that sand until it stops moving or falls below the lower bound of the grid, until we finally find the first sand that falls below the lower bound, then we return the number of the sand particle. To simulate the falling of the sand we track the position of the sand and apply the specified movement rules at each step of the simulation.
 
 For part 2 we do the same, but calculate the floor of the 2D grid and change the logic of the simulation to account for the floor. This time we add sand and run the simulation until a particle of sand stops at the source point.
+
+## [Day 15](src/fifteen.rs)
+A tricky search problem that requires you to filter down the search space greatly.
+
+For part 1 we parse in the input as a list of "Sensor" objects (sensor position, beacon position, manhatten distance). For a paricular position if we wanted to find if the missing beacon could be in it we can check its manhatten distance from each sensor and see if that distance is less than or equal to the distance from that sensor to its beacon, and if that is the case for any sensors then that position is known to not have the missing beacon. Since we know the row we want to check
