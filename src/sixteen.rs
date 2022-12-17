@@ -38,14 +38,29 @@ fn find_max_pressure_2(valves: &HashMap<String, Valve>) -> i32 {
     let starting_state = SearchState::new(2);
 
     let mut states_to_try: BinaryHeap<SearchStateWrapper> = BinaryHeap::new();
-    states_to_try.push(SearchStateWrapper::from_state(&starting_state, &start, start_time, &meta_graph, valves));
+    states_to_try.push(SearchStateWrapper::from_state(
+        &starting_state,
+        &start,
+        start_time,
+        &meta_graph,
+        valves,
+    ));
 
     let mut tried_states: BTreeSet<SearchState> = BTreeSet::new();
 
     let mut elimination_times: BTreeMap<i32, i32> = BTreeMap::new();
 
     let mut max_score = 0;
+    let mut i: i32 = 0;
+    let mut max_changed = false;
     while !states_to_try.is_empty() {
+        i += 1;
+
+        /*if i % 1000 == 0 {
+            println!("Cleaned!")
+            max_changed = false;
+        }*/
+
         //let state = states_to_try.iter().next().unwrap().clone();
         let state = states_to_try.pop().unwrap().search_state;
 
@@ -79,6 +94,13 @@ fn find_max_pressure_2(valves: &HashMap<String, Valve>) -> i32 {
             println!("{state:?}");
             println!("{actions:?}");
             println!("{state_result:?}");
+            println!("{i}");
+
+            //max_changed = true;
+            states_to_try = states_to_try
+                .into_iter()
+                .filter(|s| s.base_case_score >= max_score)
+                .collect();
 
             for (time_sum, count) in elimination_times.iter() {
                 println!("{time_sum}\t{count}");
@@ -109,8 +131,17 @@ fn find_max_pressure_2(valves: &HashMap<String, Valve>) -> i32 {
             for (actor, _) in actors_in_heuristic_order {*/
             for actor in vec![0, 1] {
                 let new_state = state.appended(&node, actor);
-                if !tried_states.contains(&new_state) {
-                    states_to_try.push(SearchStateWrapper::from_state(&new_state, &start, start_time, &meta_graph, valves));
+                let new_state_wrapper = SearchStateWrapper::from_state(
+                    &new_state,
+                    &start,
+                    start_time,
+                    &meta_graph,
+                    valves,
+                );
+                if !tried_states.contains(&new_state)
+                    && new_state_wrapper.base_case_score > max_score
+                {
+                    states_to_try.push(new_state_wrapper);
                 }
             }
         }
@@ -248,14 +279,14 @@ impl SearchStateWrapper {
         valves: &HashMap<String, Valve>,
     ) -> SearchStateWrapper {
         SearchStateWrapper {
-            /*base_case_score: -search_state
-                .to_game_state(start, start_time, meta_graph, valves)
-                .0
-                .best_case_score(valves),*/
             base_case_score: search_state
                 .to_game_state(start, start_time, meta_graph, valves)
                 .0
-                .score,
+                .best_case_score(valves),
+            /*base_case_score: search_state
+            .to_game_state(start, start_time, meta_graph, valves)
+            .0
+            .score,*/
             search_state: search_state.clone(),
         }
     }
