@@ -4,7 +4,6 @@ use std::io::{self, BufReader};
 
 pub fn part_one() {
     let values = read_input(&mut BufReader::new(io::stdin()));
-    println!("{values:?}");
     let answer = find_tower_height(&values, 2022);
 
     println!("{}", answer);
@@ -18,13 +17,9 @@ pub fn part_two() {
 }
 
 fn read_input<T: std::io::Read>(reader: &mut BufReader<T>) -> JetPattern {
-    for line in reader.lines() {
-        let line = line.unwrap();
+    let line = reader.lines().next().unwrap().unwrap();
 
-        return JetPattern::from_str(&line);
-    }
-
-    panic!()
+    JetPattern::from_str(&line)
 }
 
 #[derive(Hash, Eq, PartialEq, Debug, Clone)]
@@ -60,7 +55,6 @@ fn find_tower_height(jet_pattern: &JetPattern, num_rocks: i64) -> i64 {
 
     let mut j = 0;
     let mut i = -1;
-    //for i in 0..num_rocks {
     while i < num_rocks {
         i += 1;
         let mut position = Position::new(grid.get_heighest_row() + 4, 4);
@@ -69,34 +63,8 @@ fn find_tower_height(jet_pattern: &JetPattern, num_rocks: i64) -> i64 {
         //grid.print(&rock_pattern, &position);
         //println!("");
 
-        /*if grid.any_row_is_tetris() {
-            println!("Tetris!");
-        }*/
-
         loop {
-            /*
-            let hit_down = grid.hits_anything(&rock_pattern, &position.moved(-1, 0));
-            println!("hit_down = {hit_down:?}");
-            if let Some(HitType::Floor) = hit_down {
-                for p in rock_pattern.all_positions(&position) {
-                    grid.set(&p, TileState::Filled);
-                }
-                break;
-            }
-
             let direction = jet_pattern.get_direction(j);
-            let side_and_down_position = position.moved(-1, direction.to_column_offset());
-
-            let hit_side = grid.hits_anything(&rock_pattern, &side_and_down_position);
-
-            position = position.moved(-1, match hit_side {
-                Some(HitType::Floor) => panic!(), // TODO: might be valid
-                Some(HitType::Wall) => 0,
-                None => direction.to_column_offset()
-            });
-            */
-            let direction = jet_pattern.get_direction(j);
-            //println!("{direction:?}");
             let position_lr = position.moved(0, direction.to_column_offset());
 
             if grid.hits_anything(&rock_pattern, &position_lr).is_none() {
@@ -124,60 +92,24 @@ fn find_tower_height(jet_pattern: &JetPattern, num_rocks: i64) -> i64 {
         let height = grid.get_heighest_row();
         let occurance = Occurance { i, j, height };
         if fingerprints.contains_key(&fingerprint) {
-            println!("found match: (i={i}, j={j})\n\t{fingerprint:?}");
             let prev_occurance = fingerprints.get(&fingerprint).unwrap()[0].clone();
 
             let i_diff = occurance.i - prev_occurance.i;
             let j_diff = occurance.j - prev_occurance.j;
             let height_diff = occurance.height - prev_occurance.height;
 
-            println!("i = {i}");
-            println!("j = {j}");
-            println!("i_diff = {i_diff}");
-            println!("j_diff = {j_diff}");
-            println!("height_diff = {height_diff}");
-
             let remaining_rocks = (num_rocks - 1) - i;
-
             let num_remaining_recurrances = remaining_rocks / i_diff;
-
-            println!("remaining_rocks = {remaining_rocks}");
-            println!("num_remaining_recurrances = {num_remaining_recurrances}");
 
             i += num_remaining_recurrances * i_diff;
             j += num_remaining_recurrances * j_diff;
 
             calculated_offset += height_diff * num_remaining_recurrances;
-
-            println!("i after = {i}");
-            println!("j after = {j}");
-            println!("calculated_offset = {calculated_offset}");
-
-            //panic!();
-
-            /*if fingerprints.get(&fingerprint).unwrap().len() == 2 {
-                // only to confirm, don't actually need
-                let mut occurances = fingerprints.get(&fingerprint).unwrap().clone();
-                occurances.push(occurance.clone());
-                println!("Recurring fingerprint!");
-                println!("occurances: {occurances:?}");
-                panic!();
-            }*/
         } else {
             fingerprints.insert(fingerprint.clone(), vec![]);
         }
 
         fingerprints.get_mut(&fingerprint).unwrap().push(occurance);
-
-        /*if i == 100 {
-            grid.print(&rock_pattern, &position);
-            println!("");
-            panic!();
-        }
-
-        if i % 1000 == 0 {
-            println!("i = {i}");
-        }*/
     }
 
     // Off by one error somewhere...
@@ -197,13 +129,6 @@ impl RockPattern {
         self.relative_rocks
             .iter()
             .map(|relative| reference.moved(relative.row, relative.column))
-            .collect()
-    }
-
-    fn below_positions(&self, reference: &Position) -> Vec<Position> {
-        self.all_positions(reference)
-            .iter()
-            .map(|p| p.moved(-1, 0))
             .collect()
     }
 
@@ -323,7 +248,7 @@ impl Direction {
         }
     }
 
-    fn to_column_offset(&self) -> i64 {
+    fn to_column_offset(self) -> i64 {
         match self {
             Direction::Left => -1,
             Direction::Right => 1,
@@ -347,10 +272,6 @@ impl Position {
         let new_column = column_change + self.column as i64;
 
         Position::new(new_row, new_column)
-    }
-
-    fn manhatten_distance(&self, other: &Position) -> i64 {
-        (other.row - self.row).abs() + (other.column - self.column).abs()
     }
 }
 
@@ -413,9 +334,7 @@ impl Grid {
         let hit_types: HashSet<HitType> = positions
             .iter()
             .flat_map(|p| {
-                if self.is_in_floor(p) {
-                    Some(HitType::Floor)
-                } else if self.get(p) == TileState::Filled {
+                if self.is_in_floor(p) || self.get(p) == TileState::Filled {
                     Some(HitType::Floor)
                 } else if self.is_in_wall(p) {
                     Some(HitType::Wall)
@@ -435,7 +354,7 @@ impl Grid {
     }
 
     //fn top_row_is_tetris(&self) -> bool {
-    fn any_row_is_tetris(&self) -> bool {
+    /*fn any_row_is_tetris(&self) -> bool {
         let top_row = self.get_heighest_row();
 
         for row in 1..top_row + 1 {
@@ -452,8 +371,8 @@ impl Grid {
             }
         }
 
-        return false;
-    }
+        false
+    }*/
 
     fn get_hashable_chunk(&self) -> BTreeSet<Position> {
         let highest_row = self.get_heighest_row();
@@ -480,7 +399,7 @@ impl Grid {
             .collect()
     }
 
-    fn print(&self, rock_pattern: &RockPattern, position: &Position) {
+    /*fn print(&self, rock_pattern: &RockPattern, position: &Position) {
         let all_pattern_positions = rock_pattern.all_positions(position);
 
         for row in (self.bottom_row + 1..self.get_heighest_row() + 3 + 4 + 1).rev() {
@@ -507,8 +426,8 @@ impl Grid {
         for _ in self.left_wall..self.right_wall + 1 {
             print!("-");
         }
-        println!("");
-    }
+        println!();
+    }*/
 }
 
 /*
