@@ -55,8 +55,9 @@ fn find_tower_height(jet_pattern: &JetPattern, num_rocks: i64) -> i64 {
 
     let mut j = 0;
     let mut i = -1;
-    while i < num_rocks {
-        i += 1;
+    while i < num_rocks - 1 {
+        // Weird check so that we can adjust i as needed in loop
+        i += 1; // maybe less error prone than making sure to increment at end
         let mut position = Position::new(grid.get_heighest_row() + 4, 4);
         let rock_pattern = RockPattern::from_round_number(i);
 
@@ -110,11 +111,6 @@ fn find_tower_height(jet_pattern: &JetPattern, num_rocks: i64) -> i64 {
         }
 
         fingerprints.get_mut(&fingerprint).unwrap().push(occurance);
-    }
-
-    // Off by one error somewhere...
-    if calculated_offset > 0 {
-        calculated_offset -= 1;
     }
 
     grid.get_heighest_row() + calculated_offset
@@ -430,7 +426,6 @@ impl Grid {
     }*/
 }
 
-/*
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
@@ -440,11 +435,11 @@ mod tests {
 
     #[test]
     fn test_part_1_example() {
-        let f = File::open("inputs/six_example.txt").unwrap();
+        let f = File::open("inputs/seventeen_example.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 7;
-        let actual = find_start_marker(&values[0]);
+        let expected = 3068;
+        let actual = find_tower_height(&values, 2022);
 
         assert_eq!(expected, actual)
     }
@@ -452,22 +447,22 @@ mod tests {
     #[ignore]
     #[test]
     fn test_part_1_actual() {
-        let f = File::open("inputs/six.txt").unwrap();
+        let f = File::open("inputs/seventeen.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 1287;
-        let actual = find_start_marker(&values[0]);
+        let expected = 3177;
+        let actual = find_tower_height(&values, 2022);
 
         assert_eq!(expected, actual)
     }
 
     #[test]
     fn test_part_2_example() {
-        let f = File::open("inputs/six_example.txt").unwrap();
+        let f = File::open("inputs/seventeen_example.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 19;
-        let actual = find_start_marker_2(&values[0]);
+        let expected = 1514285714288;
+        let actual = find_tower_height(&values, 1000000000000);
 
         assert_eq!(expected, actual)
     }
@@ -475,13 +470,12 @@ mod tests {
     #[ignore]
     #[test]
     fn test_part_2_actual() {
-        let f = File::open("inputs/six.txt").unwrap();
+        let f = File::open("inputs/seventeen.txt").unwrap();
         let values = read_input(&mut BufReader::new(f));
 
-        let expected = 3716;
-        let actual = find_start_marker_2(&values[0]);
+        let expected = 1565517241382;
+        let actual = find_tower_height(&values, 1000000000000);
 
         assert_eq!(expected, actual)
     }
 }
-*/
