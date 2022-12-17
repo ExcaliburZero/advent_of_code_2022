@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::io::prelude::*;
 use std::io::{self, BufReader};
 
@@ -12,9 +12,9 @@ pub fn part_one() {
 
 pub fn part_two() {
     let values = read_input(&mut BufReader::new(io::stdin()));
-    //let answer = find_tower_height(&values, 1000000000000);
+    let answer = find_tower_height(&values, 1000000000000);
 
-    //println!("{}", answer);
+    println!("{}", answer);
 }
 
 fn read_input<T: std::io::Read>(reader: &mut BufReader<T>) -> JetPattern {
@@ -27,20 +27,51 @@ fn read_input<T: std::io::Read>(reader: &mut BufReader<T>) -> JetPattern {
     panic!()
 }
 
+#[derive(Hash, Eq, PartialEq, Debug, Clone)]
+struct Fingerprint {
+    pattern_modulo: i64,
+    direction_modulo: i64,
+    tiles_pattern: BTreeSet<Position>,
+}
+
+impl Fingerprint {
+    fn new(grid: &Grid, j: i64, jet_pattern: &JetPattern) -> Fingerprint {
+        Fingerprint {
+            pattern_modulo: j % 5,
+            direction_modulo: j % jet_pattern.directions.len() as i64,
+            tiles_pattern: grid.get_hashable_chunk(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+struct Occurance {
+    i: i64,
+    j: i64,
+    height: i64,
+}
+
 fn find_tower_height(jet_pattern: &JetPattern, num_rocks: i64) -> i64 {
     let mut grid = Grid::new();
 
+    let mut fingerprints: HashMap<Fingerprint, Vec<Occurance>> = HashMap::new();
+
+    let mut calculated_offset = 0;
+
     let mut j = 0;
-    for i in 0..num_rocks {
+    let mut i = -1;
+    //for i in 0..num_rocks {
+    while i < num_rocks {
+        i += 1;
         let mut position = Position::new(grid.get_heighest_row() + 4, 4);
         let rock_pattern = RockPattern::from_round_number(i);
 
         //grid.print(&rock_pattern, &position);
         //println!("");
 
-        if grid.any_row_is_tetris() {
+        /*if grid.any_row_is_tetris() {
             println!("Tetris!");
-        }
+        }*/
 
         loop {
             /*
@@ -75,7 +106,7 @@ fn find_tower_height(jet_pattern: &JetPattern, num_rocks: i64) -> i64 {
             let position_down = position.moved(-1, 0);
             if grid.hits_anything(&rock_pattern, &position_down).is_some() {
                 for p in rock_pattern.all_positions(&position) {
-                    grid.set(&p, TileState::Filled);
+                    grid.set(&p);
                 }
                 j += 1;
                 break;
@@ -89,6 +120,55 @@ fn find_tower_height(jet_pattern: &JetPattern, num_rocks: i64) -> i64 {
             j += 1;
         }
 
+        let fingerprint = Fingerprint::new(&grid, j, jet_pattern);
+        let height = grid.get_heighest_row();
+        let occurance = Occurance { i, j, height };
+        if fingerprints.contains_key(&fingerprint) {
+            println!("found match: (i={i}, j={j})\n\t{fingerprint:?}");
+            let prev_occurance = fingerprints.get(&fingerprint).unwrap()[0].clone();
+
+            let i_diff = occurance.i - prev_occurance.i;
+            let j_diff = occurance.j - prev_occurance.j;
+            let height_diff = occurance.height - prev_occurance.height;
+
+            println!("i = {i}");
+            println!("j = {j}");
+            println!("i_diff = {i_diff}");
+            println!("j_diff = {j_diff}");
+            println!("height_diff = {height_diff}");
+
+            let remaining_rocks = (num_rocks - 1) - i;
+
+            let num_remaining_recurrances = remaining_rocks / i_diff;
+
+            println!("remaining_rocks = {remaining_rocks}");
+            println!("num_remaining_recurrances = {num_remaining_recurrances}");
+
+            i += num_remaining_recurrances * i_diff;
+            j += num_remaining_recurrances * j_diff;
+
+            calculated_offset += height_diff * num_remaining_recurrances;
+
+            println!("i after = {i}");
+            println!("j after = {j}");
+            println!("calculated_offset = {calculated_offset}");
+
+            //panic!();
+
+            /*if fingerprints.get(&fingerprint).unwrap().len() == 2 {
+                // only to confirm, don't actually need
+                let mut occurances = fingerprints.get(&fingerprint).unwrap().clone();
+                occurances.push(occurance.clone());
+                println!("Recurring fingerprint!");
+                println!("occurances: {occurances:?}");
+                panic!();
+            }*/
+        } else {
+            fingerprints.insert(fingerprint.clone(), vec![]);
+        }
+
+        fingerprints.get_mut(&fingerprint).unwrap().push(occurance);
+
         /*if i == 100 {
             grid.print(&rock_pattern, &position);
             println!("");
@@ -100,7 +180,12 @@ fn find_tower_height(jet_pattern: &JetPattern, num_rocks: i64) -> i64 {
         }*/
     }
 
-    grid.get_heighest_row()
+    // Off by one error somewhere...
+    if calculated_offset > 0 {
+        calculated_offset -= 1;
+    }
+
+    grid.get_heighest_row() + calculated_offset
 }
 
 struct RockPattern {
@@ -246,7 +331,7 @@ impl Direction {
     }
 }
 
-#[derive(Eq, PartialEq, Hash, Debug, Clone)]
+#[derive(Eq, PartialEq, Hash, Debug, Clone, Ord, PartialOrd)]
 struct Position {
     row: i64,
     column: i64,
@@ -282,7 +367,7 @@ enum TileState {
 }
 
 struct Grid {
-    tiles: HashMap<Position, TileState>,
+    tiles: HashSet<Position>,
     bottom_row: i64,
     left_wall: i64,
     right_wall: i64,
@@ -291,7 +376,7 @@ struct Grid {
 impl Grid {
     fn new() -> Grid {
         Grid {
-            tiles: HashMap::new(),
+            tiles: HashSet::new(),
             bottom_row: 0,
             left_wall: 0,  // index 0
             right_wall: 8, // index 8
@@ -299,11 +384,15 @@ impl Grid {
     }
 
     fn get(&self, position: &Position) -> TileState {
-        *self.tiles.get(position).unwrap_or(&TileState::Empty)
+        if self.tiles.contains(position) {
+            TileState::Filled
+        } else {
+            TileState::Empty
+        }
     }
 
-    fn set(&mut self, position: &Position, state: TileState) {
-        self.tiles.insert(position.clone(), state);
+    fn set(&mut self, position: &Position) {
+        self.tiles.insert(position.clone());
     }
 
     fn is_in_wall(&self, position: &Position) -> bool {
@@ -315,12 +404,7 @@ impl Grid {
     }
 
     fn get_heighest_row(&self) -> i64 {
-        self.tiles
-            .iter()
-            .filter(|(_, t)| **t == TileState::Filled)
-            .map(|(p, _)| p.row)
-            .max()
-            .unwrap_or(0)
+        self.tiles.iter().map(|p| p.row).max().unwrap_or(0)
     }
 
     fn hits_anything(&self, rock_pattern: &RockPattern, position: &Position) -> Option<HitType> {
@@ -371,6 +455,31 @@ impl Grid {
         return false;
     }
 
+    fn get_hashable_chunk(&self) -> BTreeSet<Position> {
+        let highest_row = self.get_heighest_row();
+
+        let mut lower_row = highest_row;
+        for column in self.left_wall + 1..self.right_wall {
+            let mut row = highest_row;
+            loop {
+                let position = Position::new(row, column);
+                if row == self.bottom_row || self.get(&position) == TileState::Filled {
+                    break;
+                }
+
+                row -= 1;
+            }
+            row += 1;
+            lower_row = *[lower_row, row].iter().min().unwrap();
+        }
+
+        self.tiles
+            .iter()
+            .filter(|p| p.row > lower_row)
+            .map(|p| p.moved(-lower_row, 0))
+            .collect()
+    }
+
     fn print(&self, rock_pattern: &RockPattern, position: &Position) {
         let all_pattern_positions = rock_pattern.all_positions(position);
 
@@ -381,8 +490,7 @@ impl Grid {
                 print!(
                     "{}",
                     match self.tiles.get(&p) {
-                        Some(TileState::Empty) => '.',
-                        Some(TileState::Filled) => '#',
+                        Some(_) => '#',
                         None => {
                             if all_pattern_positions.contains(&p) {
                                 '@'
