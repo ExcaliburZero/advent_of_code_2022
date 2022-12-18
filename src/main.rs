@@ -123,5 +123,10 @@ fn get_days() -> Vec<AdventOfCodeDay> {
             advent_of_code_2022::seventeen::part_one as fn(),
             advent_of_code_2022::seventeen::part_two as fn(),
         ),
+        (
+            "18".to_string(),
+            advent_of_code_2022::eighteen::part_one as fn(),
+            advent_of_code_2022::eighteen::part_two as fn(),
+        ),
     ]
 }
