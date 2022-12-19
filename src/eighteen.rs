@@ -96,7 +96,7 @@ struct Cube {
     x: i32,
     y: i32,
     z: i32,
-} 
+}
 
 impl Cube {
     fn new(x: i32, y: i32, z: i32) -> Cube {
@@ -143,9 +143,12 @@ struct Bounds3D {
 
 impl Bounds3D {
     fn contains(&self, cube: &Cube) -> bool {
-        cube.x >= self.top_left_shallow.x && cube.x <= self.bottom_right_deep.x &&
-            cube.y >= self.top_left_shallow.y && cube.y <= self.bottom_right_deep.y &&
-            cube.z >= self.top_left_shallow.z && cube.z <= self.bottom_right_deep.z
+        cube.x >= self.top_left_shallow.x
+            && cube.x <= self.bottom_right_deep.x
+            && cube.y >= self.top_left_shallow.y
+            && cube.y <= self.bottom_right_deep.y
+            && cube.z >= self.top_left_shallow.z
+            && cube.z <= self.bottom_right_deep.z
     }
 }
 
@@ -160,7 +163,7 @@ impl Droplet {
         let bounds = Droplet::calculate_bounds(&cubes);
         Droplet {
             cubes: cubes.to_vec(),
-            bounds
+            bounds,
         }
     }
 
@@ -169,15 +172,23 @@ impl Droplet {
 
         Droplet::new(&cubes)
     }
-    
+
     fn calculate_bounds(cubes: &[Cube]) -> Bounds3D {
         let xs: Vec<i32> = cubes.iter().map(|c| c.x).collect();
         let ys: Vec<i32> = cubes.iter().map(|c| c.y).collect();
         let zs: Vec<i32> = cubes.iter().map(|c| c.z).collect();
 
         Bounds3D {
-            top_left_shallow: Cube::new(*xs.iter().min().unwrap(), *ys.iter().min().unwrap(),*zs.iter().min().unwrap()),
-            bottom_right_deep: Cube::new(*xs.iter().max().unwrap(), *ys.iter().max().unwrap(),*zs.iter().max().unwrap()),
+            top_left_shallow: Cube::new(
+                *xs.iter().min().unwrap(),
+                *ys.iter().min().unwrap(),
+                *zs.iter().min().unwrap(),
+            ),
+            bottom_right_deep: Cube::new(
+                *xs.iter().max().unwrap(),
+                *ys.iter().max().unwrap(),
+                *zs.iter().max().unwrap(),
+            ),
         }
     }
 
@@ -208,7 +219,9 @@ impl Droplet {
             }
         }
 
-        Some(Droplet::new(&bubble_cubes.iter().cloned().collect::<Vec<Cube>>()))
+        Some(Droplet::new(
+            &bubble_cubes.iter().cloned().collect::<Vec<Cube>>(),
+        ))
     }
 }
 
