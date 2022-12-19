@@ -12,9 +12,9 @@ pub fn part_one() {
 
 pub fn part_two() {
     let values = read_input(&mut BufReader::new(io::stdin()));
-    //let answer = find_start_marker_2(&values[0]);
+    let answer = multiply_max_geodes(&values);
 
-    //println!("{}", answer);
+    println!("{}", answer);
 }
 
 fn read_input<T: std::io::Read>(reader: &mut BufReader<T>) -> Vec<Blueprint> {
@@ -41,33 +41,6 @@ fn sum_all_quality_levels(blueprints: &[Blueprint]) -> i32 {
 }
 
 fn calc_largest_geode_total(blueprint: &Blueprint, starting_state: &State) -> i32 {
-    /*let actions: Vec<Action> = vec![
-        Action::DontBuild,
-        Action::DontBuild,
-        Action::Build(Resource::ClayRobot),
-        Action::DontBuild,
-        Action::Build(Resource::ClayRobot),
-        Action::DontBuild,
-    ];
-
-    let final_state = actions
-        .into_iter()
-        .fold(starting_state.clone(), |state, action| {
-            let new_state = state.step(action, blueprint);
-            println!("====================================");
-            println!("Action = {action:?}");
-            println!("new_state = {new_state:?}");
-            println!(
-                "possible_actions = {:?}",
-                new_state.get_possible_actions(blueprint)
-            );
-            new_state
-        });
-
-    panic!();*/
-
-    println!("blueprint = {blueprint:?}");
-
     let mut states_to_visit: BinaryHeap<(State, Path)> =
         vec![(starting_state.clone(), Path::new())]
             .into_iter()
@@ -79,8 +52,6 @@ fn calc_largest_geode_total(blueprint: &Blueprint, starting_state: &State) -> i3
     while !states_to_visit.is_empty() {
         let (state, path) = states_to_visit.pop().unwrap();
 
-        //println!("state = {state:?}");
-
         if visited_states.contains(&state) {
             continue;
         }
@@ -89,22 +60,6 @@ fn calc_largest_geode_total(blueprint: &Blueprint, starting_state: &State) -> i3
         let num_geodes = *state.resources.get(&Resource::Geode).unwrap_or(&0);
         if num_geodes > max_geodes {
             max_geodes = num_geodes;
-            println!("state = {state:?}");
-            println!("path = {path:?}");
-            println!("max so far = {max_geodes}");
-
-            if max_geodes >= 9 {
-                let mut cur_state = starting_state.clone();
-                for action in path.valves.iter() {
-                    println!("{cur_state:?}");
-                    println!("{action:?}");
-
-                    cur_state = cur_state.step(*action, blueprint);
-                }
-
-                println!("{cur_state:?}");
-                //panic!();
-            }
         }
 
         let best_case_num_geodes = state.get_best_case_num_geodes();
@@ -114,7 +69,6 @@ fn calc_largest_geode_total(blueprint: &Blueprint, starting_state: &State) -> i3
 
         if state.steps_remaining >= 1 {
             for action in state.get_possible_actions(blueprint) {
-                //println!("    {action:?}");
                 let new_state = state.step(action, blueprint);
 
                 if !visited_states.contains(&new_state) {
@@ -125,6 +79,21 @@ fn calc_largest_geode_total(blueprint: &Blueprint, starting_state: &State) -> i3
     }
 
     max_geodes
+}
+
+fn multiply_max_geodes(blueprints: &[Blueprint]) -> i32 {
+    let blueprints: Vec<Blueprint> = blueprints.iter().take(3).cloned().collect();
+
+    let num_steps = 32;
+    let start_state = State::new(
+        vec![(Resource::OreRobot, 1)].into_iter().collect(),
+        num_steps,
+    );
+
+    blueprints
+        .iter()
+        .map(|b| calc_largest_geode_total(b, &start_state))
+        .product()
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd)]
@@ -139,17 +108,13 @@ impl Path {
 
     fn appended(&self, node: &Action) -> Path {
         let mut valves = self.valves.clone();
-        valves.push(node.clone());
+        valves.push(*node);
 
         Path { valves }
     }
-
-    fn len(&self) -> usize {
-        self.valves.len()
-    }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Blueprint {
     costs: HashMap<Resource, HashSet<(Resource, i32)>>,
 }
@@ -250,7 +215,7 @@ impl Blueprint {
             .collect(),
         );
 
-        Blueprint { costs: costs }
+        Blueprint { costs }
     }
 }
 
