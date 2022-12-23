@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::hash::Hash;
 use std::io::prelude::*;
 use std::io::{self, BufReader};
 
@@ -12,9 +11,9 @@ pub fn part_one() {
 
 pub fn part_two() {
     let values = read_input(&mut BufReader::new(io::stdin()));
-    //let answer = find_start_marker_2(&values[0]);
+    let answer = calc_human_value(&values, &"root".to_string(), &"humn".to_string());
 
-    //println!("{}", answer);
+    println!("{}", answer);
 }
 
 fn read_input<T: std::io::Read>(reader: &mut BufReader<T>) -> HashMap<MonkeyName, Formula> {
@@ -44,9 +43,48 @@ fn find_root_value(monkeys: &HashMap<MonkeyName, Formula>) -> i64 {
     cache.get(&"root".to_string())
 }
 
+fn calc_human_value(
+    monkeys: &HashMap<MonkeyName, Formula>,
+    root_name: &MonkeyName,
+    human_name: &MonkeyName,
+) -> i64 {
+    let (left, right) = monkeys.get(root_name).unwrap().get_args().unwrap();
+
+    let left = get_formula2(&left, &monkeys, human_name).simplified();
+    let right = get_formula2(&right, &monkeys, human_name).simplified();
+
+    let (variable, other) = match (left, right) {
+        (Formula2::Constant(other), variable) => (variable, other),
+        (variable, Formula2::Constant(other)) => (variable, other),
+        (_, _) => panic!(),
+    };
+
+    variable.solve(other)
+}
+
+fn get_formula2(
+    name: &MonkeyName,
+    monkeys: &HashMap<MonkeyName, Formula>,
+    human_name: &MonkeyName,
+) -> Formula2 {
+    if name == human_name {
+        return Formula2::Variable();
+    }
+
+    let formula_1 = monkeys.get(name).unwrap();
+    match formula_1 {
+        Formula::Constant(value) => Formula2::Constant(*value),
+        Formula::Calculation(left, operation, right) => Formula2::Calculation(
+            Box::new(get_formula2(left, monkeys, human_name)),
+            *operation,
+            Box::new(get_formula2(right, monkeys, human_name)),
+        ),
+    }
+}
+
 struct MonkeyCache {
     monkeys: HashMap<MonkeyName, Formula>,
-    cache: HashMap<MonkeyName, i64>
+    cache: HashMap<MonkeyName, i64>,
 }
 
 impl MonkeyCache {
@@ -75,7 +113,7 @@ impl MonkeyCache {
                 let left = self.get(&monkey_1);
                 let right = self.get(&monkey_2);
                 operation.apply(left, right)
-            },
+            }
         }
     }
 }
@@ -83,7 +121,7 @@ impl MonkeyCache {
 #[derive(Debug, Clone)]
 enum Formula {
     Constant(i64),
-    Calculation(MonkeyName, Operation, MonkeyName)
+    Calculation(MonkeyName, Operation, MonkeyName),
 }
 
 impl Formula {
@@ -99,11 +137,87 @@ impl Formula {
 
         Formula::Calculation(monkey_1.to_string(), operation, monkey_2.to_string())
     }
+
+    fn get_args(&self) -> Option<(MonkeyName, MonkeyName)> {
+        match self {
+            Formula::Constant(_) => None,
+            Formula::Calculation(left, _, right) => Some((left.clone(), right.clone())),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
+enum Formula2 {
+    Constant(i64),
+    Calculation(Box<Formula2>, Operation, Box<Formula2>),
+    Variable(),
+}
+
+impl Formula2 {
+    fn simplified(&self) -> Formula2 {
+        use Formula2::*;
+
+        match self {
+            Calculation(left, operation, right) => {
+                let left = left.simplified();
+                let right = right.simplified();
+
+                match (left, right) {
+                    (Constant(left), Constant(right)) => {
+                        Formula2::Constant(operation.apply(left, right))
+                    }
+                    (left, right) => {
+                        Formula2::Calculation(Box::new(left), *operation, Box::new(right))
+                    }
+                }
+            }
+            const_or_var => const_or_var.clone(),
+        }
+    }
+
+    fn solve(&self, other: i64) -> i64 {
+        use Formula2::*;
+
+        match self {
+            Variable() => other,
+            Constant(_) => panic!(),
+            Calculation(left, operation, right) => {
+                let (variable, new_other) = match (*left.clone(), *right.clone()) {
+                    (Constant(constant), variable) => {
+                        let other = match *operation {
+                            Operation::Addition => other - constant,
+                            Operation::Subtraction => (other - constant) * -1,
+                            Operation::Multiplication => other / constant,
+                            Operation::Division => constant / other,
+                        };
+
+                        (variable, other)
+                    }
+                    (variable, Constant(constant)) => {
+                        let other = match *operation {
+                            Operation::Addition => other - constant,
+                            Operation::Subtraction => other + constant,
+                            Operation::Multiplication => other / constant,
+                            Operation::Division => other * constant,
+                        };
+
+                        (variable, other)
+                    }
+                    (_, _) => panic!(),
+                };
+
+                variable.solve(new_other)
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
 enum Operation {
-    Addition, Subtraction, Multiplication, Division
+    Addition,
+    Subtraction,
+    Multiplication,
+    Division,
 }
 
 impl Operation {
