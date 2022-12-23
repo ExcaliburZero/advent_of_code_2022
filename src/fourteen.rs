@@ -238,8 +238,8 @@ impl Position {
     }
 
     fn moved(&self, row_change: i32, column_change: i32) -> Position {
-        let new_row = row_change + self.row as i32;
-        let new_column = column_change + self.column as i32;
+        let new_row = row_change + self.row;
+        let new_column = column_change + self.column;
 
         Position::new(new_row, new_column)
     }

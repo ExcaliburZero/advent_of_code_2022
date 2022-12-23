@@ -52,7 +52,7 @@ fn find_max_pressure_2(valves: &HashMap<String, Valve>) -> i32 {
 
     let mut max_score = 0;
     let mut i: i32 = 0;
-    let mut max_changed = false;
+    let _max_changed = false;
     while !states_to_try.is_empty() {
         i += 1;
 
@@ -129,7 +129,7 @@ fn find_max_pressure_2(valves: &HashMap<String, Valve>) -> i32 {
             //actors_in_heuristic_order.reverse();
 
             for (actor, _) in actors_in_heuristic_order {*/
-            for actor in vec![0, 1] {
+            for actor in [0, 1] {
                 let new_state = state.appended(&node, actor);
                 let new_state_wrapper = SearchStateWrapper::from_state(
                     &new_state,
@@ -430,9 +430,9 @@ impl SearchState {
         }
     }
 
-    fn appended(&self, node: &String, actor: usize) -> SearchState {
+    fn appended(&self, node: &str, actor: usize) -> SearchState {
         let mut visited_nodes = self.visited_nodes.clone();
-        visited_nodes[actor].push(node.clone());
+        visited_nodes[actor].push(node.to_string());
 
         SearchState { visited_nodes }
     }
@@ -500,15 +500,11 @@ impl Path {
         Path { valves: vec![] }
     }
 
-    fn appended(&self, node: &String) -> Path {
+    fn appended(&self, node: &str) -> Path {
         let mut valves = self.valves.clone();
-        valves.push(node.clone());
+        valves.push(node.to_string());
 
         Path { valves }
-    }
-
-    fn len(&self) -> usize {
-        self.valves.len()
     }
 
     fn to_actions(&self) -> Vec<Action> {

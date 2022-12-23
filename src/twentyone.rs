@@ -50,8 +50,8 @@ fn calc_human_value(
 ) -> i64 {
     let (left, right) = monkeys.get(root_name).unwrap().get_args().unwrap();
 
-    let left = get_formula2(&left, &monkeys, human_name).simplified();
-    let right = get_formula2(&right, &monkeys, human_name).simplified();
+    let left = get_formula2(&left, monkeys, human_name).simplified();
+    let right = get_formula2(&right, monkeys, human_name).simplified();
 
     let (variable, other) = match (left, right) {
         (Formula2::Constant(other), variable) => (variable, other),
@@ -186,7 +186,7 @@ impl Formula2 {
                     (Constant(constant), variable) => {
                         let other = match *operation {
                             Operation::Addition => other - constant,
-                            Operation::Subtraction => (other - constant) * -1,
+                            Operation::Subtraction => -(other - constant),
                             Operation::Multiplication => other / constant,
                             Operation::Division => constant / other,
                         };

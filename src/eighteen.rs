@@ -160,7 +160,7 @@ struct Droplet {
 
 impl Droplet {
     fn new(cubes: &[Cube]) -> Droplet {
-        let bounds = Droplet::calculate_bounds(&cubes);
+        let bounds = Droplet::calculate_bounds(cubes);
         Droplet {
             cubes: cubes.to_vec(),
             bounds,

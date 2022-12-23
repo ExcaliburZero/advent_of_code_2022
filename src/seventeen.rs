@@ -264,8 +264,8 @@ impl Position {
     }
 
     fn moved(&self, row_change: i64, column_change: i64) -> Position {
-        let new_row = row_change + self.row as i64;
-        let new_column = column_change + self.column as i64;
+        let new_row = row_change + self.row;
+        let new_column = column_change + self.column;
 
         Position::new(new_row, new_column)
     }
