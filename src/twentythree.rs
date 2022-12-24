@@ -27,13 +27,29 @@ pub fn part_one() {
 
 pub fn part_two() {
     let values = read_input(&mut BufReader::new(io::stdin()));
-    //let answer = find_start_marker_2(&values[0]);
+    let answer = find_first_round_no_move(&values);
 
-    //println!("{}", answer);
+    println!("{}", answer);
 }
 
 fn read_input<T: std::io::Read>(reader: &mut BufReader<T>) -> State {
     State::from_lines(&reader.lines().map(|l| l.unwrap()).collect::<Vec<String>>())
+}
+
+fn find_first_round_no_move(initial_state: &State) -> i32 {
+    let mut state = initial_state.clone();
+    let mut prev_state = state.clone();
+    let mut round = 0;
+    loop {
+        state = state.advance(round);
+
+        if round != 0 && state == prev_state {
+            return round + 1;
+        }
+
+        prev_state = state.clone();
+        round += 1;
+    }
 }
 
 fn find_num_empty_after_rounds(initial_state: &State, num_rounds: i32) -> i32 {
@@ -83,7 +99,7 @@ impl Bounds2D {
         num_rows * num_columns
     }
 
-    fn get_positions_tl_to_br(&self) -> Vec<Position> {
+    /*fn get_positions_tl_to_br(&self) -> Vec<Position> {
         let mut positions = vec![];
         for row in self.top_left.row..=self.bottom_right.row {
             for column in self.top_left.column..=self.bottom_right.column {
@@ -92,10 +108,10 @@ impl Bounds2D {
         }
 
         positions
-    }
+    }*/
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 struct State {
     elf_positions: BTreeMap<ElfId, Position>,
 }
@@ -105,7 +121,7 @@ impl State {
         State { elf_positions }
     }
 
-    fn print(&self) {
+    /*fn print(&self) {
         let bounds = self.get_bounds();
 
         let mut last_row = None;
@@ -129,7 +145,7 @@ impl State {
         }
 
         println!();
-    }
+    }*/
 
     fn from_lines(lines: &[String]) -> State {
         let mut elf_positions: BTreeMap<ElfId, Position> = BTreeMap::new();
